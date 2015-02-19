@@ -16,4 +16,6 @@ public interface ProductGraphRepository extends GraphRepository<Product>, Cypher
 
     @Query("match (p:Product)<-[r:PRODUCT]-(m)<-[:MERCHANT]-()<-[:ACTIVITY*0..3]-(a:Activity {title: {0}}) where r.amount >= {1} return distinct p")
     public List<Product> findByAmount(String activityTitle, Integer amount);
+
+    public Product findByCode(String code);
 }

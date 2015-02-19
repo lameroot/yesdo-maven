@@ -13,6 +13,8 @@ public class ProductData {
     private Merchant merchant;
     private Date createdAt;
     private boolean enabled;
+    private String code;
+    private boolean partial = true;
 
     //add user, raitings, friends
 
@@ -50,6 +52,24 @@ public class ProductData {
 
     public ProductData setEnabled(boolean enabled) {
         this.enabled = enabled;
+        return this;
+    }
+
+    public boolean isPartial() {
+        return partial;
+    }
+
+    public ProductData setPartial(boolean partial) {
+        this.partial = partial;
+        return this;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public ProductData setCode(String code) {
+        this.code = code;
         return this;
     }
 }

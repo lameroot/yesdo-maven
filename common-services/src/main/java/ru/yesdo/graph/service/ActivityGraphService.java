@@ -28,7 +28,7 @@ public class ActivityGraphService {
             Activity activity = new Activity();
             activity.setTitle(activityData.getTitle());
             activity.setName(activityData.getName());
-            activity.setParents(activityData.getParents());
+            //activity.setParents(activityData.getParents());
             activityGraphRepository.save(activity);
             return activity;
         } catch (Throwable e) {

@@ -3,12 +3,11 @@ package ru.yesdo.service;
 import org.junit.Test;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yesdo.GeneralCommonServiceTest;
 import ru.yesdo.db.GeneralCommonServiceDbTest;
 import ru.yesdo.model.Activity;
 import ru.yesdo.model.data.ActivityData;
 
-import javax.annotation.Resource;
+import java.util.Set;
 
 /**
  * User: Krainov
@@ -17,32 +16,32 @@ import javax.annotation.Resource;
  */
 public class ActivityServiceTest extends GeneralCommonServiceDbTest {
 
-    @Resource
-    private ActivityService activityService;
-
-    private ActivityData create(String title,Activity...parents) {
-        ActivityData activityData = new ActivityData().setName(title).setTitle(title);
-        for (Activity parent : parents) {
-            activityData.addParent(parent);
-        }
-        return activityData;
-    }
 
     @Test
     @Transactional
-    @Rollback(false)
     public void testCreateActivity() {
-        ActivityData a0Data = create(Activity.ROOT_TITLE + ":").setPartial(false);
-        Activity a0 = activityService.create(a0Data);
-        assertNotNull(a0);
-        assertNotNull(a0.getId());
-
-        for (Activity activity : neo4jTemplate.findAll(Activity.class)) {
-            System.out.println("graph = " + activity);
+        for (ActivityData activityData : activityDatas) {
+            Activity activity = createActivity(activityData);
+            assertNotNull(activity);
         }
 
-        for (Activity activity : activityRepository.findAll()) {
-            System.out.println("db = " + activity);
-        }
+
+        assertEquals(activityDatas.size(), activityRepository.count());
+        assertEquals(activityDatas.size(), activityGraphRepository.count());
+
+        Activity a21Found = activityGraphRepository.findByName("a21");
+        assertNotNull(a21Found);
+        Set<Activity> parentOfa21 = a21Found.getParents();
+        assertNotNull(parentOfa21);
+        assertEquals(2,parentOfa21.size());
+        neo4jTemplate.fetch(parentOfa21);
+        assertEquals(1, parentOfa21.stream().filter(f -> f.getName().equals("a11")).count());
+        assertEquals(1, parentOfa21.stream().filter(f -> f.getName().equals("a13")).count());
+
+        Activity a21DbFound = activityRepository.findByName("a21");
+        assertNotNull(a21DbFound);
+        assertNotNull(a21DbFound.getParents());
+        assertEquals(2,a21DbFound.getParents().size());
+
     }
 }

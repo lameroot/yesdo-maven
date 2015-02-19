@@ -11,4 +11,6 @@ import ru.yesdo.model.Product;
  */
 @Repository
 public interface ProductRepository extends CrudRepository<Product,Long> {
+
+    public Product findByCode(String code);
 }

@@ -1,10 +1,8 @@
 package ru.yesdo.model;
 
 import org.neo4j.graphdb.Direction;
-import org.springframework.data.neo4j.annotation.GraphId;
-import org.springframework.data.neo4j.annotation.GraphProperty;
-import org.springframework.data.neo4j.annotation.NodeEntity;
-import org.springframework.data.neo4j.annotation.RelatedTo;
+import org.springframework.data.neo4j.annotation.*;
+import org.springframework.data.neo4j.support.index.IndexType;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -29,14 +27,25 @@ import java.util.Date;
 @Table(name = "product")
 public class Product {
 
-    @GraphId
+    public final static String INDEX_FOR_CODE = "product_code";
+
     @Id
     @SequenceGenerator(name = "product_id_gen", sequenceName = "product_seq")
     @GeneratedValue(generator = "product_id_gen", strategy = GenerationType.SEQUENCE)
+    @GraphProperty(propertyName = "db_id")
     private Long id;
+
+    @GraphId
+    @Column(name = "graph_id")
+    private Long graphId;
 
     @GraphProperty
     private String title;//название продукта
+
+    @GraphProperty
+    @Column(name = "code", nullable = false, unique = true)
+    @Indexed(indexName = INDEX_FOR_CODE, indexType = IndexType.SIMPLE, unique = true)
+    private String code;
 
     @RelatedTo(direction = Direction.INCOMING, type = "PRODUCT")
     @ManyToOne
@@ -57,6 +66,14 @@ public class Product {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getGraphId() {
+        return graphId;
+    }
+
+    public void setGraphId(Long graphId) {
+        this.graphId = graphId;
     }
 
     public String getTitle() {
@@ -92,7 +109,15 @@ public class Product {
         this.enabled = enabled;
     }
 
-//    private Blog description;//краткое описание продукта
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    //    private Blog description;//краткое описание продукта
 //    private Set<Media> medias;//список картинок или видео для данного продукта
 //    private Location location;//где находится данный продукт или услуга
 //    private Set<Tag> tags;//список тэгов, кол-во должно ограничиваться пермиссией, если это делает мерчант

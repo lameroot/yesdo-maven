@@ -24,11 +24,16 @@ public class User {
 
     public static final String INDEX_FOR_LOGIN = "user_login";
 
-    @GraphId
+
 	@Id
 	@SequenceGenerator(name = "user_id_gen", sequenceName = "user_seq")
 	@GeneratedValue(generator = "user_id_gen", strategy = GenerationType.SEQUENCE)
+	@GraphProperty(propertyName = "db_id")
 	private Long id;
+
+	@GraphId
+	@Column(name = "graph_id")
+	private Long graphId;
 
     @org.springframework.data.annotation.Transient
 	@ElementCollection(fetch = FetchType.EAGER)
@@ -36,6 +41,7 @@ public class User {
 
 	@GraphProperty
     @Indexed(indexName = INDEX_FOR_LOGIN, indexType = IndexType.SIMPLE)
+	@Column(name = "login", unique = true, nullable = false)
 	private String login;
 
     @org.springframework.data.annotation.Transient
@@ -69,6 +75,14 @@ public class User {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public Long getGraphId() {
+		return graphId;
+	}
+
+	public void setGraphId(Long graphId) {
+		this.graphId = graphId;
 	}
 
 	public Set<Permission> getPermissions() {

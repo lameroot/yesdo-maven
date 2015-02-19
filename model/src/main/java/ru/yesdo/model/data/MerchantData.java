@@ -13,6 +13,7 @@ public class MerchantData {
     private String name;
     private String title;
     private Set<Activity> activities;
+    private boolean partial = true;
 
     public String getName() {
         return name;
@@ -44,6 +45,16 @@ public class MerchantData {
     public MerchantData addActivity(Activity activity) {
         if ( null == this.activities ) this.activities = new HashSet<>();
         this.activities.add(activity);
+        return this;
+    }
+
+
+    public boolean isPartial() {
+        return partial;
+    }
+
+    public MerchantData setPartial(boolean partial) {
+        this.partial = partial;
         return this;
     }
 }

@@ -27,8 +27,13 @@ public class Merchant {
 	@Id
 	@SequenceGenerator(name = "merchant_id_gen", sequenceName = "merchant_seq")
 	@GeneratedValue(generator = "merchant_id_gen", strategy = GenerationType.SEQUENCE)
-    @GraphId
+    @GraphProperty(propertyName = "db_id")
 	private Long id;
+
+    @GraphId
+    @Column(name = "graph_id")
+    private Long graphId;
+
     @GraphProperty
     @Indexed(indexName = INDEX_FOR_NAME, indexType = IndexType.SIMPLE, unique = true)
     @Column(name = "name", unique = true)
@@ -83,7 +88,15 @@ public class Merchant {
 		this.id = id;
 	}
 
-	public String getName() {
+    public Long getGraphId() {
+        return graphId;
+    }
+
+    public void setGraphId(Long graphId) {
+        this.graphId = graphId;
+    }
+
+    public String getName() {
 		return name;
 	}
 
@@ -138,6 +151,17 @@ public class Merchant {
         if ( null == activities ) this.activities = new HashSet<>();
         this.activities.add(activity);
         return this;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Merchant{");
+        sb.append("id=").append(id);
+        sb.append(", graphId=").append(graphId);
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", title='").append(title).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 
     //    private Contact contact;//контактная информация для мерчанта

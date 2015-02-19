@@ -11,6 +11,7 @@ public class UserData {
 
     private String login;
     private Merchant merchant;
+    private boolean partial = true;
 
     public String getLogin() {
         return login;
@@ -27,6 +28,15 @@ public class UserData {
 
     public UserData setMerchant(Merchant merchant) {
         this.merchant = merchant;
+        return this;
+    }
+
+    public boolean isPartial() {
+        return partial;
+    }
+
+    public UserData setPartial(boolean partial) {
+        this.partial = partial;
         return this;
     }
 }

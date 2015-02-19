@@ -11,4 +11,6 @@ import ru.yesdo.model.Activity;
  */
 @Repository
 public interface ActivityRepository extends CrudRepository<Activity,Long> {
+
+    public Activity findByName(String name);
 }
