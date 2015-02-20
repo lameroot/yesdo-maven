@@ -3,6 +3,8 @@ package ru.yesdo;
 import junit.framework.TestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.neo4j.gis.spatial.SpatialDatabaseService;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
+import org.springframework.transaction.PlatformTransactionManager;
 import ru.yesdo.db.JpaConfigTest;
 import ru.yesdo.db.repository.ActivityRepository;
 import ru.yesdo.graph.GraphConfigTest;
@@ -38,7 +41,11 @@ public class GeneralCommonServiceTest extends TestCase {
     @Autowired(required = false)
     protected Neo4jTemplate neo4jTemplate;
     @Resource
-    protected ActivityRepository activityRepository;
+    protected PlatformTransactionManager transactionManager;
+    @Resource
+    protected GraphDatabaseService graphDatabaseService;
+    @Resource
+    protected SpatialDatabaseService spatialDatabaseService;
 
     @Test
     public void testExist() {

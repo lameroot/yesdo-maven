@@ -1,5 +1,6 @@
 package ru.yesdo.graph;
 
+import org.neo4j.gis.spatial.SpatialDatabaseService;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.test.TestGraphDatabaseFactory;
@@ -40,7 +41,8 @@ public class GraphConfigTest
     @Resource
     private EntityManagerFactory entityManagerFactory;
 
-    private static final String DB_PATH = "data/graph.db";
+    //private static final String DB_PATH = "data/graph.db";
+    private static final String DB_PATH = "D:/Users/krainov/Documents/opt/neo4j-community-2.1.6/data/graph.db";
 
     public GraphConfigTest() {
         setBasePackage("ru.yesdo.model");
@@ -60,10 +62,15 @@ public class GraphConfigTest
 
     @Bean
     public GraphDatabaseService graphDatabaseService() {
-        return new TestGraphDatabaseFactory().newImpermanentDatabase();
-        //return new GraphDatabaseFactory().newEmbeddedDatabase(DB_PATH);
+        //return new TestGraphDatabaseFactory().newImpermanentDatabase();
+        return new GraphDatabaseFactory().newEmbeddedDatabase(DB_PATH);
     }
 
+    @Bean
+    public SpatialDatabaseService spatialDatabaseService() {
+        SpatialDatabaseService spatialDatabaseService = new SpatialDatabaseService(graphDatabaseService());
+        return spatialDatabaseService;
+    }
 
 
 }

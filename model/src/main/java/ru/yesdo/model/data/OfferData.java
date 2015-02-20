@@ -16,6 +16,7 @@ public class OfferData {
     private ProductType productType;//тип продукта
     private Date expirationAt;//
     private ContactData contactData;
+    private boolean partial = true;
 
 
     public Offer toOffer() {
@@ -27,23 +28,11 @@ public class OfferData {
         offer.setPublicity(getPublicity());
         offer.setTimeProduct(getTimeProduct());
 
-
-        if ( null != contactData ) {
-            OfferContact offerContact = new OfferContact();
-            //offerContact.setOffer(offer);
-            offerContact.setLocation(contactData.getLon(),contactData.getLat());
-
-            try {
-                for (ContactParam contactParam : contactData.getContactParams()) {
-                    offerContact.addContactParam(contactParam);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            offer.setContact(offerContact);
+        if ( null != getContactData() ) {
+            Contact contact = getContactData().toContact();
+            contact.setType(Contact.ContactType.OFFER);
+            offer.setContact(contact);
         }
-
-
         return offer;
     }
 
@@ -107,5 +96,13 @@ public class OfferData {
     public OfferData setContactData(ContactData contactData) {
         this.contactData = contactData;
         return this;
+    }
+
+    public boolean isPartial() {
+        return partial;
+    }
+
+    public void setPartial(boolean partial) {
+        this.partial = partial;
     }
 }

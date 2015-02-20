@@ -117,6 +117,19 @@ public class Product {
         this.code = code;
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Product{");
+        sb.append("id=").append(id);
+        sb.append(", graphId=").append(graphId);
+        sb.append(", title='").append(title).append('\'');
+        sb.append(", code='").append(code).append('\'');
+        sb.append(", enabled=").append(enabled);
+        sb.append(", createdAt=").append(createdAt);
+        sb.append('}');
+        return sb.toString();
+    }
+
     //    private Blog description;//краткое описание продукта
 //    private Set<Media> medias;//список картинок или видео для данного продукта
 //    private Location location;//где находится данный продукт или услуга

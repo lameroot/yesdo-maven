@@ -38,6 +38,7 @@ public class Merchant {
     @Indexed(indexName = INDEX_FOR_NAME, indexType = IndexType.SIMPLE, unique = true)
     @Column(name = "name", unique = true)
 	private String name;
+
     @GraphProperty
     @Indexed(indexName = INDEX_FOR_TITLE, indexType = IndexType.FULLTEXT)
     private String title;
@@ -57,23 +58,8 @@ public class Merchant {
     private Set<Activity> activities = new HashSet<>();//список активити в которые может вступать мерчант. кол-во активити должно ограничиваться пермиссией
 
     @RelatedTo(type = "OFFER", direction = Direction.OUTGOING, elementClass = Offer.class)
-    @OneToMany(fetch = FetchType.LAZY,mappedBy = "merchant")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "merchant")
     private Set<Offer> offers = new HashSet<>();
-
-    public Offer concludeOffer(Product product, Offer offerData) {
-        Offer offer = new Offer();
-        offer.setMerchant(this);
-        offer.setProduct(product);
-        offer.setEnabled(offerData.isEnabled());
-        offer.setAmount(offerData.getAmount());
-        offer.setExpirationAt(offerData.getExpirationAt());
-        offer.setProductType(offerData.getProductType());
-        offer.setPublicity(offerData.getPublicity());
-        offer.setTimeProduct(offerData.getTimeProduct());
-        offer.setContact(offerData.getContact());
-
-        return offer;
-    }
 
     public Merchant() {}
     public Merchant(String name) {

@@ -40,25 +40,7 @@ public class MerchantGraphService {
         return merchant;
     }
 
-    //todo: переписать
-    public Merchant concludeOffer(Merchant merchant, Product product, OfferData offerData) {
-        Merchant m = merchantGraphRepository.findOne(merchant.getId());
-        Product p = productGraphRepository.findOne(product.getId());
-        Offer o = offerData.toOffer();
-        Offer o1 = offerData.toOffer();
-        o1.setAmount(o1.getAmount() + 13);
-        Offer newOffer = m.concludeOffer(p, o);
-        Offer newOffer1 = m.concludeOffer(p, o1);
-        neo4jTemplate.save(newOffer);
-        neo4jTemplate.save(newOffer1);
 
-        m.getOffers().add(newOffer);
-        m.getOffers().add(newOffer1);
-
-        System.out.println("----size = " + m.getOffers().size());
-
-        return m;
-    }
 
     public void joinToMerchant(Merchant merchant,Product...products) {
 //        for (Product product : products) {

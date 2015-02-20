@@ -2,12 +2,14 @@ package ru.yesdo.service;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yesdo.db.GeneralCommonServiceDbTest;
-import ru.yesdo.model.Activity;
-import ru.yesdo.model.Merchant;
+import ru.yesdo.model.*;
 import ru.yesdo.model.data.ActivityData;
+import ru.yesdo.model.data.ContactData;
 import ru.yesdo.model.data.MerchantData;
+import ru.yesdo.model.data.OfferData;
 
 import javax.annotation.Resource;
 import java.util.Set;
@@ -43,6 +45,31 @@ public class MerchantServiceTest extends GeneralCommonServiceDbTest {
         assertNotNull(m21DbFound);
         assertNotNull(m21DbFound.getActivities());
         assertEquals(2, m21DbFound.getActivities().size());
+    }
 
+    @Test
+    @Transactional
+    @Rollback(false)
+    public void testConcludeOffer() {
+        createActivities();
+        createMerchants();
+        createProducts();
+
+        createOffers();
+
+        assertEquals(offerDatas.size(),offerRepository.count());
+        assertEquals(offerDatas.size(),offerGraphRepository.count());
+
+        for (Offer offer : offerRepository.findAll()) {
+            System.out.println(offer.getId() + ":" + offer.getMerchant() + ":" + offer.getProduct());
+        }
+
+        Merchant m21Found = merchantGraphRepository.findByName("m21");
+        assertNotNull(m21Found);
+        Set<Offer> offers = m21Found.getOffers();
+        assertTrue(offers.size() == 2);
+        neo4jTemplate.fetch(offers);
+        assertEquals(1, offers.stream().filter(f -> f.getProduct().getTitle().equals("p21")).count());
+        assertEquals(1, offers.stream().filter(f -> f.getProduct().getTitle().equals("p22")).count());
     }
 }

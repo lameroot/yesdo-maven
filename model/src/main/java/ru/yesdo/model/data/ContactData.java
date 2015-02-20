@@ -1,5 +1,6 @@
 package ru.yesdo.model.data;
 
+import ru.yesdo.model.Contact;
 import ru.yesdo.model.ContactParam;
 
 import java.util.HashSet;
@@ -38,5 +39,19 @@ public class ContactData {
 
     public double getLat() {
         return lat;
+    }
+
+    public Contact toContact() {
+        Contact contact = new Contact();
+        contact.setLocation(getLon(),getLat());
+
+        try {
+            for (ContactParam contactParam : getContactParams()) {
+                contact.addContactParam(contactParam);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return contact;
     }
 }

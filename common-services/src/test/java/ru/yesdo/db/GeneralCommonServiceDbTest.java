@@ -2,23 +2,18 @@ package ru.yesdo.db;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.graphdb.Transaction;
+import org.springframework.data.neo4j.support.node.Neo4jHelper;
+import org.springframework.test.context.transaction.BeforeTransaction;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.SimpleTransactionStatus;
 import ru.yesdo.GeneralCommonServiceTest;
-import ru.yesdo.db.repository.ActivityRepository;
-import ru.yesdo.db.repository.MerchantRepository;
-import ru.yesdo.db.repository.ProductRepository;
-import ru.yesdo.db.repository.UserRepository;
-import ru.yesdo.graph.repository.ActivityGraphRepository;
-import ru.yesdo.graph.repository.MerchantGraphRepository;
-import ru.yesdo.graph.repository.ProductGraphRepository;
-import ru.yesdo.graph.repository.UserGraphRepository;
-import ru.yesdo.model.Activity;
-import ru.yesdo.model.Merchant;
-import ru.yesdo.model.Product;
-import ru.yesdo.model.User;
-import ru.yesdo.model.data.ActivityData;
-import ru.yesdo.model.data.MerchantData;
-import ru.yesdo.model.data.ProductData;
-import ru.yesdo.model.data.UserData;
+import ru.yesdo.db.repository.*;
+import ru.yesdo.graph.repository.*;
+import ru.yesdo.model.*;
+import ru.yesdo.model.data.*;
 import ru.yesdo.service.ActivityService;
 import ru.yesdo.service.MerchantService;
 import ru.yesdo.service.ProductService;
@@ -27,10 +22,7 @@ import ru.yesdo.service.UserService;
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * User: Krainov
@@ -65,14 +57,37 @@ public class GeneralCommonServiceDbTest extends GeneralCommonServiceTest {
     protected UserGraphRepository userGraphRepository;
     @Resource
     protected UserService userService;
+    @Resource
+    protected OfferRepository offerRepository;
+    @Resource
+    protected OfferGraphRepository offerGraphRepository;
 
 
     protected List<ActivityData> activityDatas = new ArrayList<>();
     protected List<MerchantData> merchantDatas = new ArrayList<>();
     protected List<ProductData> productDatas = new ArrayList<>();
     protected List<UserData> userDatas = new ArrayList<>();
+    protected List<Object[]> offerDatas = new ArrayList<>();
+
+    @BeforeTransaction
+    public void cleanGraphDb() {
+        System.out.println("---- clean graph db");
+        Neo4jHelper.cleanDb(graphDatabaseService);
+    }
+
     @Before
     public void initData() {
+        Transaction transaction = graphDatabaseService.beginTx();
+        try {
+            Neo4jHelper.cleanDb(graphDatabaseService);
+            transaction.success();
+        } catch (Exception e) {
+            transaction.failure();
+            e.printStackTrace();
+        } finally {
+            transaction.close();
+        }
+
         ActivityData a0 = createActivityData(Activity.ROOT_TITLE);
         ActivityData a11 = createActivityData("a11", Activity.ROOT_TITLE);
         ActivityData a12 = createActivityData("a12", Activity.ROOT_TITLE);
@@ -153,6 +168,23 @@ public class GeneralCommonServiceDbTest extends GeneralCommonServiceTest {
         userDatas.add(u13);
         userDatas.add(u14);
 
+        ContactParam contactParam = new ContactParam("name", "stas", ContactParam.Type.PROFILE);
+        offerDatas.add(createOfferDataAsArray("m11","p11",100L,11.0,34.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m11","p12",110L,11.0,34.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m12","p13",120L,11.0,34.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m12","p14",140L,11.0,34.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m21","p21",200L,11.0,34.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m21","p22",210L,11.0,34.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m22","p23",220L,11.0,34.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m22","p24",230L,11.0,34.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m31","p31",300L,11.0,34.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m31","p32",310L,11.0,34.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m32","p33",320L,11.0,34.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m32","p34",330L,11.0,34.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m33","p35",340L,11.0,34.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m33","p36",350L,11.0,34.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m34","p37",360L,11.0,34.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m34","p38",370L,11.0,34.0,contactParam));
     }
 
     protected ActivityData createActivityData(String title, String... parents) {
@@ -187,6 +219,20 @@ public class GeneralCommonServiceDbTest extends GeneralCommonServiceTest {
         return productDatas.stream().filter(f -> f.getTitle().equals(title)).findFirst().get();
     }
 
+    protected OfferData createOfferData(Long amount, double lon, double lat, ContactParam...contactParams) {
+        return new OfferData().setAmount(amount).setPublicity(Publicity.PUBLIC).setProductType(ProductType.SERVICE).setContactData(
+                new ContactData().setLocation(lon, lat).addContactParams(contactParams)
+        );
+    }
+
+    protected Object[] createOfferDataAsArray(String merchantName, String productTitle, Long amount, double lon, double lat, ContactParam...contactParams) {
+        List<Object> list = new ArrayList<>();
+        list.add(merchantName);
+        list.add(productTitle);
+        list.add(createOfferData(amount, lon, lat, contactParams));
+        return list.toArray(new Object[]{});
+    }
+
     protected Activity createActivity(ActivityData activityData) {
         return activityService.create(activityData);
     }
@@ -197,6 +243,10 @@ public class GeneralCommonServiceDbTest extends GeneralCommonServiceTest {
 
     protected Product createProduct(ProductData productData) {
         return productService.create(productData);
+    }
+
+    protected Offer createOffer(Merchant merchant, Product product, OfferData offerData) {
+        return merchantService.concludeOffer(merchant, product, offerData);
     }
 
     protected User createUser(UserData userData) {
@@ -217,6 +267,23 @@ public class GeneralCommonServiceDbTest extends GeneralCommonServiceTest {
 
     protected void createUsers() {
         userDatas.stream().forEach(userData -> createUser(userData));
+    }
+
+    protected void createOffers() {
+        offerDatas.stream().forEach(offerDataAsArray -> {
+                    String merchantName = (String) offerDataAsArray[0];
+                    String productTitle = (String) offerDataAsArray[1];
+                    OfferData offerData = (OfferData) offerDataAsArray[2];
+
+                    Merchant merchant = merchantRepository.findByName(merchantName);
+                    assertNotNull(merchant);
+                    Product product = productRepository.findByCode(findProductDataByTitle(productTitle).getCode());
+                    assertNotNull(product);
+
+                    Offer offer = createOffer(merchant,product,offerData);
+                    assertNotNull(offer);
+                }
+        );
     }
 
     @Test

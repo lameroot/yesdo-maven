@@ -40,6 +40,7 @@ public class JpaConfigTest {
         entityManagerFactory.setDataSource(datasource());
         entityManagerFactory.setPackagesToScan(new String[]{"ru.yesdo.model"});
         entityManagerFactory.setJpaVendorAdapter(jpaVendorAdapter());
+        entityManagerFactory.getJpaPropertyMap().put("hibernate.hbm2ddl.auto","create");
         entityManagerFactory.afterPropertiesSet();
         return entityManagerFactory.getObject();
     }
@@ -54,7 +55,7 @@ public class JpaConfigTest {
 
     @Bean
     public DataSource datasource() {
-        /*
+
         DriverManagerDataSource driverManagerDataSource = new DriverManagerDataSource();
         driverManagerDataSource.setDriverClassName("org.h2.Driver");
         //driverManagerDataSource.setUrl("jdbc:h2:~/yesdo");
@@ -62,13 +63,13 @@ public class JpaConfigTest {
         driverManagerDataSource.setUsername("sa");
 
         return driverManagerDataSource;
-        */
 
+        /*
         EmbeddedDatabaseFactoryBean bean = new EmbeddedDatabaseFactoryBean();
         bean.setDatabaseType(EmbeddedDatabaseType.H2);
         bean.afterPropertiesSet();
         return bean.getObject();
-
+        */
     }
 
     HibernateJpaVendorAdapter jpaVendorAdapter() {

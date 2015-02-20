@@ -1,13 +1,16 @@
 package ru.yesdo.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.Type;
 import org.springframework.data.neo4j.annotation.GraphId;
+import org.springframework.data.neo4j.annotation.GraphProperty;
 import org.springframework.data.neo4j.annotation.Indexed;
+import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.fieldaccess.DynamicProperties;
 import org.springframework.data.neo4j.fieldaccess.DynamicPropertiesContainer;
 import org.springframework.data.neo4j.support.index.IndexType;
 
-import javax.persistence.Transient;
+import javax.persistence.*;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
@@ -19,18 +22,42 @@ import java.util.Set;
  * Пока многие параметры здесь указаны чисто приблизительно, поэтому можно использовать только имя и фио
  * Должен хранится в БД
  */
+@NodeEntity
+@Entity
+@Table(name = "contact")
 public class Contact {
 
-    public final static String LOCATION_INDEX_NAME = "locations22";
+    public final static String LOCATION_INDEX_NAME = "location_index";
 
-    @GraphId
+    @Id
+    @SequenceGenerator(name = "contact_id_gen", sequenceName = "contact_seq")
+    @GeneratedValue(generator = "contact_id_gen", strategy = GenerationType.SEQUENCE)
+    @GraphProperty(propertyName = "db_id")
     private Long id;
 
+    @GraphId
+    @Column(name = "graph_id")
+    private Long graphId;
+
     @Indexed(indexType = IndexType.POINT, indexName = LOCATION_INDEX_NAME)
+    @Column(name = "wkt")
     private String wkt;
 
-    @Transient
+    @Type(type = "ru.yesdo.model.DynamicPropertiesType")
+    @Column(name = "params")
     private DynamicProperties params = new DynamicPropertiesContainer();
+
+    @GraphProperty(propertyName = "type")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
+    private ContactType type;
+
+    public static enum ContactType {
+        OFFER,
+        MERCHANT,
+        USER,
+        PRODUCT
+    }
 
     public Contact addContactParam(String name, Object value, ContactParam.Type type) throws IOException {
         return addContactParam(name, value, type,false);
@@ -99,6 +126,22 @@ public class Contact {
         this.id = id;
     }
 
+    public Long getGraphId() {
+        return graphId;
+    }
+
+    public void setGraphId(Long graphId) {
+        this.graphId = graphId;
+    }
+
+    public String getWkt() {
+        return wkt;
+    }
+
+    public void setWkt(String wkt) {
+        this.wkt = wkt;
+    }
+
     @JsonIgnore
     public DynamicProperties getParams() {
         return params;
@@ -108,18 +151,11 @@ public class Contact {
         this.params = params;
     }
 
+    public ContactType getType() {
+        return type;
+    }
 
-    /*
-    private Long id;
-    private String firstName;//имя
-    private String lastName;//фамилия
-    private Set<String> phones;//список телефонов, просто текст через запятую
-    private Set<String> emails;//список почтовых адресов, просто через запятую
-    private Set<String> skypes;//список скайпов
-    private Set<String> socials;//список данных на соцсети
-    private Location location;//гео-данные
-    private User user;//собственное пользователь, для которого делаем, может быть нулл, если это для мерчанта
-    private Merchant merchant;//мерчант, если это контакт для него
-    private Map<String,String> params;//список доп/ параметров
-    */
+    public void setType(ContactType type) {
+        this.type = type;
+    }
 }

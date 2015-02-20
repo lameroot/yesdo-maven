@@ -38,6 +38,15 @@ public class JsonUtil {
         return objectMapper.readValue(json,clazz);
     }
 
+    public static <T extends Object> T toSafeObject(Class<T> clazz, String json) {
+        try {
+            return objectMapper.readValue(json,clazz);
+        } catch (IOException e) {
+            logger.warn("Error json: " + json + " to objects of " + clazz);
+        }
+        return null;
+    }
+
     public static void main(String[] args) throws IOException {
         Contact contact = new Contact();
         contact.setLocation(11.0,11.0);

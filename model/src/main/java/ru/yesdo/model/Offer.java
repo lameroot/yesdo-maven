@@ -14,11 +14,15 @@ import java.util.Date;
 @Table(name = "offer")
 public class Offer {
 
-    @GraphId
     @Id
     @SequenceGenerator(name = "offer_id_gen", sequenceName = "offer_seq")
     @GeneratedValue(generator = "offer_id_gen", strategy = GenerationType.SEQUENCE)
+    @GraphProperty(propertyName = "db_id")
     private Long id;
+
+    @GraphId
+    @Column(name = "graph_id")
+    private Long graphId;
 
     @RelatedTo(direction = Direction.INCOMING,type = "OFFER")
     @Fetch
@@ -58,8 +62,9 @@ public class Offer {
     private Date expirationAt;//дата истечения возможности использования продуктом
 
     @RelatedTo(type = "CONTACT", direction = Direction.OUTGOING)
-    @Transient
-    private OfferContact contact;
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "fk_contact_id", nullable = true)
+    private Contact contact;
 
     public Long getId() {
         return id;
@@ -67,6 +72,14 @@ public class Offer {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getGraphId() {
+        return graphId;
+    }
+
+    public void setGraphId(Long graphId) {
+        this.graphId = graphId;
     }
 
     public Merchant getMerchant() {
@@ -133,11 +146,11 @@ public class Offer {
         this.expirationAt = expirationAt;
     }
 
-    public OfferContact getContact() {
+    public Contact getContact() {
         return contact;
     }
 
-    public void setContact(OfferContact contact) {
+    public void setContact(Contact contact) {
         this.contact = contact;
     }
 }
