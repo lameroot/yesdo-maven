@@ -1,6 +1,7 @@
 package ru.yesdo.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yesdo.db.repository.MerchantRepository;
 import ru.yesdo.db.repository.UserRepository;
@@ -29,7 +30,7 @@ public class UserService {
     private MerchantGraphRepository merchantGraphRepository;
 
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public User create(UserData userData) {
         if ( !userRepository.findByLogin(userData.getLogin()).isEmpty() ) throw new AlreadyExistException(userData.getLogin());
         User user = new User();

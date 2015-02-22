@@ -5,10 +5,6 @@ import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.data.neo4j.support.node.Neo4jHelper;
 import org.springframework.test.context.transaction.BeforeTransaction;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.SimpleTransactionStatus;
 import ru.yesdo.GeneralCommonServiceTest;
 import ru.yesdo.db.repository.*;
 import ru.yesdo.graph.repository.*;
@@ -88,10 +84,10 @@ public class GeneralCommonServiceDbTest extends GeneralCommonServiceTest {
             transaction.close();
         }
 
-        ActivityData a0 = createActivityData(Activity.ROOT_TITLE);
-        ActivityData a11 = createActivityData("a11", Activity.ROOT_TITLE);
-        ActivityData a12 = createActivityData("a12", Activity.ROOT_TITLE);
-        ActivityData a13 = createActivityData("a13", Activity.ROOT_TITLE);
+        ActivityData a0 = createActivityData(Activity.ROOT_NAME);
+        ActivityData a11 = createActivityData("a11", Activity.ROOT_NAME);
+        ActivityData a12 = createActivityData("a12", Activity.ROOT_NAME);
+        ActivityData a13 = createActivityData("a13", Activity.ROOT_NAME);
         ActivityData a21 = createActivityData("a21", "a11", "a13");
         ActivityData a22 = createActivityData("a22", "a13");
         ActivityData a31 = createActivityData("a31", "a21");
@@ -187,8 +183,8 @@ public class GeneralCommonServiceDbTest extends GeneralCommonServiceTest {
         offerDatas.add(createOfferDataAsArray("m34","p38",370L,11.0,34.0,contactParam));
     }
 
-    protected ActivityData createActivityData(String title, String... parents) {
-        ActivityData activityData = new ActivityData().setName(title).setTitle(title);
+    protected ActivityData createActivityData(String name, String... parents) {
+        ActivityData activityData = new ActivityData().setName(name).setTitle("title for: " + name);
         for (String parent : parents) {
             Activity parentFound = new Activity(parent);
             activityData.addParent(parentFound);

@@ -1,6 +1,7 @@
 package ru.yesdo.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yesdo.db.repository.ActivityRepository;
 import ru.yesdo.db.repository.MerchantRepository;
@@ -40,7 +41,7 @@ public class MerchantService {
     @Resource
     private OfferGraphRepository offerGraphRepository;
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Merchant create(MerchantData merchantData) {
         if ( null != merchantRepository.findByName(merchantData.getName()) ) throw new AlreadyExistException(merchantData.getName());
         Merchant merchant = new Merchant(merchantData.getName());

@@ -13,7 +13,7 @@ public class ActivityRepositoryTest extends GeneralCommonServiceDbTest {
 
     @Test
     public void testCreateActivity() {
-        Activity activity = new Activity(Activity.ROOT_TITLE);
+        Activity activity = new Activity(Activity.ROOT_NAME);
         activityRepository.save(activity);
         assertNotNull(activity);
         assertNotNull(activity.getId());

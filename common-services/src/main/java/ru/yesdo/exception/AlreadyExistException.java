@@ -33,6 +33,6 @@ public class AlreadyExistException extends RuntimeException {
 
     @Override
     public String getMessage() {
-        return super.getMessage() + ", name: " + name;
+        return (null != super.getMessage() ? super.getMessage() : "Object with thi name already exist in store") + ", name: " + name;
     }
 }

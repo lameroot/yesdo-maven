@@ -1,6 +1,7 @@
 package ru.yesdo.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yesdo.db.repository.MerchantRepository;
 import ru.yesdo.db.repository.ProductRepository;
@@ -28,7 +29,7 @@ public class ProductService {
     private MerchantGraphRepository merchantGraphRepository;
 
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Product create(ProductData productData) {
         Product product = new Product();
         product.setTitle(productData.getTitle());

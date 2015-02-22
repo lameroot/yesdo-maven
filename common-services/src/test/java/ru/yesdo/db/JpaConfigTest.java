@@ -56,6 +56,7 @@ public class JpaConfigTest {
     @Bean
     public DataSource datasource() {
 
+
         DriverManagerDataSource driverManagerDataSource = new DriverManagerDataSource();
         driverManagerDataSource.setDriverClassName("org.h2.Driver");
         //driverManagerDataSource.setUrl("jdbc:h2:~/yesdo");
@@ -70,6 +71,7 @@ public class JpaConfigTest {
         bean.afterPropertiesSet();
         return bean.getObject();
         */
+
     }
 
     HibernateJpaVendorAdapter jpaVendorAdapter() {

@@ -28,7 +28,7 @@ import java.util.Set;
 @Table(name = "activity")
 public class Activity {
 
-    public final static String ROOT_TITLE = "root_activity";
+    public final static String ROOT_NAME = "root_activity";
     public final static String INDEX_FOR_NAME = "activity_name";
     public final static String INDEX_FOR_TITLE = "activity_title";
 
@@ -52,13 +52,13 @@ public class Activity {
     @Column
     private String title;
 
-    @RelatedTo(direction = Direction.OUTGOING, type = "ACTIVITY")
+    @RelatedTo(direction = Direction.INCOMING, type = "ACTIVITY")
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(name = "activity_family",joinColumns = {@JoinColumn(name = "fk_child_id",updatable = false)},
     inverseJoinColumns = {@JoinColumn(name = "fk_parent_id",nullable = false,updatable = false)})
     private Set<Activity> parents;//список родителей
 
-    @RelatedTo(direction = Direction.INCOMING, type = "ACTIVITY")
+    @RelatedTo(direction = Direction.OUTGOING, type = "ACTIVITY")
     @ManyToMany(fetch = FetchType.LAZY,mappedBy = "parents", cascade = CascadeType.ALL)
     private Set<Activity> child;//список дочерних
 

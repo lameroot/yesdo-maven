@@ -41,8 +41,12 @@ public class GraphConfigTest
     @Resource
     private EntityManagerFactory entityManagerFactory;
 
+    private static String neo4jHome = "/usr/local/Cellar/neo4j/2.1.6/libexec/";
+
     //private static final String DB_PATH = "data/graph.db";
-    private static final String DB_PATH = "D:/Users/krainov/Documents/opt/neo4j-community-2.1.6/data/graph.db";
+    private static final String DB_PATH = neo4jHome + "data/graph.db";
+
+    //private static final String DB_PATH = "D:/Users/krainov/Documents/opt/neo4j-community-2.1.6/data/graph.db";
 
     public GraphConfigTest() {
         setBasePackage("ru.yesdo.model");
@@ -62,8 +66,8 @@ public class GraphConfigTest
 
     @Bean
     public GraphDatabaseService graphDatabaseService() {
-        //return new TestGraphDatabaseFactory().newImpermanentDatabase();
-        return new GraphDatabaseFactory().newEmbeddedDatabase(DB_PATH);
+        return new TestGraphDatabaseFactory().newImpermanentDatabase();
+        //return new GraphDatabaseFactory().newEmbeddedDatabase(DB_PATH);
     }
 
     @Bean
