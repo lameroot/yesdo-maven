@@ -82,7 +82,7 @@ public class ActivityServiceTest extends GeneralCommonServiceDbTest {
     @Transactional
     public void testFindChildByDeep() {
         createActivities();
-        Result<Activity> child = activityService.findChildByDeep(Activity.ROOT_NAME,null);
+        Result<Activity> child = activityService.findChildByDeep(Activity.ROOT_NAME,1);
         assertNotNull(child);
 
         for (Activity activity : child) {
