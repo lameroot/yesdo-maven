@@ -1,23 +1,18 @@
 package ru.yesdo.service;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yesdo.db.GeneralCommonServiceDbTest;
+import ru.yesdo.GeneralCommonServiceTest;
 import ru.yesdo.model.*;
-import ru.yesdo.model.data.ActivityData;
-import ru.yesdo.model.data.ContactData;
 import ru.yesdo.model.data.MerchantData;
-import ru.yesdo.model.data.OfferData;
 
-import javax.annotation.Resource;
 import java.util.Set;
 
 /**
  * Created by lameroot on 19.02.15.
  */
-public class MerchantServiceTest extends GeneralCommonServiceDbTest {
+public class MerchantServiceTest extends GeneralCommonServiceTest {
 
 
     @Test
@@ -51,6 +46,7 @@ public class MerchantServiceTest extends GeneralCommonServiceDbTest {
     @Transactional
     @Rollback(false)
     public void testConcludeOffer() {
+        createWeekDays();
         createActivities();
         createMerchants();
         createProducts();

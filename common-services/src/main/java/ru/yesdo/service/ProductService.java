@@ -1,5 +1,6 @@
 package ru.yesdo.service;
 
+import org.neo4j.cypherdsl.grammar.Execute;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,9 +10,11 @@ import ru.yesdo.graph.repository.MerchantGraphRepository;
 import ru.yesdo.graph.repository.ProductGraphRepository;
 import ru.yesdo.model.Merchant;
 import ru.yesdo.model.Product;
+import ru.yesdo.model.SearchProductCriteria;
 import ru.yesdo.model.data.ProductData;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * Created by lameroot on 18.02.15.
@@ -51,4 +54,16 @@ public class ProductService {
 
         return product;
     }
+
+    public List<Product> findByCriteria(SearchProductCriteria criteria) {
+        //Execute query =
+
+        return null;
+    }
+
+//    Execute query =
+//            start(lookup(identifier("activity"),identifier(Activity.INDEX_FOR_NAME),identifier("name"),param("activityRootName") )).
+//                    match(path("p", node("activity")
+//                            .out("ACTIVITY").hops(0, 1).node("ch"))).returns(identifier("ch"))
+//            ;
 }

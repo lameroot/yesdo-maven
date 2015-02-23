@@ -1,6 +1,7 @@
 package ru.yesdo.model;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by lameroot on 13.12.14.
@@ -12,6 +13,28 @@ public class TimeProduct {
     private Date finish;//окончание
     private Date autoProlong;//производить авто-пролонгирование продукта на определённую дату
 
+/*
+    public enum TimeTypes {
+        SEASON_TIME,
+        WEEKEND_TIME,
+        WORKDAYS_TIME,
+        ALLDAYS_TIME,
+        CUSTOM_TIME;
+
+        private List<TimeInterval> timeIntervals;
+
+        TimeTypes(List<TimeInterval> timeIntervals) {
+            this.timeIntervals = timeIntervals;
+        }
+    }
+    */
+
+    private static class TimeInterval {
+        int startHour = 0;
+        int finishHour = 23;
+        int starMinute = 0;
+        int finishMinute = 59;
+    }
 
     public enum Days {
         SUNDAY,

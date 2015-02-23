@@ -1,14 +1,14 @@
 package ru.yesdo.service;
 
 import org.junit.Test;
-import ru.yesdo.db.GeneralCommonServiceDbTest;
+import ru.yesdo.GeneralCommonServiceTest;
 import ru.yesdo.model.User;
 import ru.yesdo.model.data.UserData;
 
 /**
  * Created by lameroot on 19.02.15.
  */
-public class UserServiceTest extends GeneralCommonServiceDbTest {
+public class UserServiceTest extends GeneralCommonServiceTest {
 
     @Test
     public void testCreateUser() {

@@ -66,8 +66,8 @@ public class GraphConfigTest
 
     @Bean
     public GraphDatabaseService graphDatabaseService() {
-        return new TestGraphDatabaseFactory().newImpermanentDatabase();
-        //return new GraphDatabaseFactory().newEmbeddedDatabase(DB_PATH);
+        //return new TestGraphDatabaseFactory().newImpermanentDatabase();
+        return new GraphDatabaseFactory().newEmbeddedDatabase(DB_PATH);
     }
 
     @Bean

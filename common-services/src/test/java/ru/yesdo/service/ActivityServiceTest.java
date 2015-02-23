@@ -1,21 +1,15 @@
 package ru.yesdo.service;
 
-import org.hibernate.Hibernate;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.junit.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.DefaultTransactionAttribute;
-import ru.yesdo.db.GeneralCommonServiceDbTest;
+import ru.yesdo.GeneralCommonServiceTest;
 import ru.yesdo.model.Activity;
 import ru.yesdo.model.data.ActivityData;
 
-import javax.annotation.Resource;
-import javax.transaction.Transaction;
 import java.util.Set;
 
 /**
@@ -23,20 +17,28 @@ import java.util.Set;
  * Date: 19.02.2015
  * Time: 17:28
  */
-public class ActivityServiceTest extends GeneralCommonServiceDbTest {
+public class ActivityServiceTest extends GeneralCommonServiceTest {
+
+    @Test
+    public void testCreateWeeDays() {
+        createWeekDays();
+    }
 
 
     @Test
     @Transactional
     @Rollback(false)
     public void testCreateActivity() {
-
+        createWeekDays();
         for (ActivityData activityData : activityDatas) {
             Activity activity = createActivity(activityData);
             assertNotNull(activity);
         }
 
         assertEquals(activityDatas.size(), activityRepository.count());
+        for (Activity activity : activityGraphRepository.findAll()) {
+            System.out.println(activity);
+        }
         assertEquals(activityDatas.size(), activityGraphRepository.count());
 
 
@@ -77,6 +79,8 @@ public class ActivityServiceTest extends GeneralCommonServiceDbTest {
         assertEquals(page1.getSize(),activityDatas.size() - 1);
         assertEquals(page1.getTotalPages(),2);
     }
+
+
 
     @Test
     @Transactional

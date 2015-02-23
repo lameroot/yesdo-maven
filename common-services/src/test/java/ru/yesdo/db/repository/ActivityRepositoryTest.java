@@ -1,7 +1,7 @@
 package ru.yesdo.db.repository;
 
 import org.junit.Test;
-import ru.yesdo.db.GeneralCommonServiceDbTest;
+import ru.yesdo.GeneralCommonServiceTest;
 import ru.yesdo.model.Activity;
 
 /**
@@ -9,7 +9,7 @@ import ru.yesdo.model.Activity;
  * Date: 19.02.2015
  * Time: 17:22
  */
-public class ActivityRepositoryTest extends GeneralCommonServiceDbTest {
+public class ActivityRepositoryTest extends GeneralCommonServiceTest {
 
     @Test
     public void testCreateActivity() {

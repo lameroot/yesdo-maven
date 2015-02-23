@@ -4,7 +4,7 @@ import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.*;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.util.*;
 
 /**
  * Created by lameroot on 08.02.15.
@@ -51,6 +51,14 @@ public class Offer {
     @GraphProperty
     @Transient
     private TimeProduct timeProduct;//время в которое можно воспользоваться услугой
+
+    @Transient
+    //@RelatedTo(direction = Direction.OUTGOING, type = "OFFER_DAY")
+    private List<OfferDay> offerDays = new ArrayList<>();
+
+    @Transient
+    @RelatedToVia(direction = Direction.INCOMING, elementClass = OfferTime.class)
+    private Set<OfferTime> offerTimes = new HashSet<>();
 
     @GraphProperty
     @Enumerated
@@ -152,5 +160,27 @@ public class Offer {
 
     public void setContact(Contact contact) {
         this.contact = contact;
+    }
+
+    public List<OfferDay> getOfferDays() {
+        return offerDays;
+    }
+
+    public void setOfferDays(List<OfferDay> offerDays) {
+        this.offerDays = offerDays;
+    }
+
+    public Set<OfferTime> getOfferTimes() {
+        return offerTimes;
+    }
+
+    public void setOfferTimes(Set<OfferTime> offerTimes) {
+        this.offerTimes = offerTimes;
+    }
+
+    public Offer addOfferTime(OfferTime offerTime) {
+        if ( null == this.offerTimes ) this.offerTimes = new HashSet<>();
+        this.offerTimes.add(offerTime);
+        return this;
     }
 }

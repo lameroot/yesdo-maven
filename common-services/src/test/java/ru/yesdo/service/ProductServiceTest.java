@@ -2,7 +2,7 @@ package ru.yesdo.service;
 
 import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yesdo.db.GeneralCommonServiceDbTest;
+import ru.yesdo.GeneralCommonServiceTest;
 import ru.yesdo.model.Merchant;
 import ru.yesdo.model.Product;
 import ru.yesdo.model.data.ProductData;
@@ -10,7 +10,7 @@ import ru.yesdo.model.data.ProductData;
 /**
  * Created by lameroot on 19.02.15.
  */
-public class ProductServiceTest extends GeneralCommonServiceDbTest {
+public class ProductServiceTest extends GeneralCommonServiceTest {
 
     @Test
     @Transactional

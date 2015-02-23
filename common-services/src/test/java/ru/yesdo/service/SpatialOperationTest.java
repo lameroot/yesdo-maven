@@ -1,14 +1,8 @@
 package ru.yesdo.service;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import org.junit.Test;
-import org.neo4j.gis.spatial.SimplePointLayer;
-import org.neo4j.gis.spatial.SpatialDatabaseRecord;
-import org.neo4j.gis.spatial.pipes.GeoPipeFlow;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yesdo.db.GeneralCommonServiceDbTest;
-
-import java.util.List;
+import ru.yesdo.GeneralCommonServiceTest;
 
 /**
  * User: Krainov
@@ -16,7 +10,7 @@ import java.util.List;
  * Time: 17:07
  * http://neo4j-contrib.github.io/spatial/
  */
-public class SpatialOperationTest extends GeneralCommonServiceDbTest {
+public class SpatialOperationTest extends GeneralCommonServiceTest {
 
     @Test
     @Transactional

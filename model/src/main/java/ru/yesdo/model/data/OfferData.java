@@ -2,7 +2,7 @@ package ru.yesdo.model.data;
 
 import ru.yesdo.model.*;
 
-import java.util.Date;
+import java.util.*;
 
 /**
  * Created by lameroot on 11.02.15.
@@ -17,6 +17,8 @@ public class OfferData {
     private Date expirationAt;//
     private ContactData contactData;
     private boolean partial = true;
+    private Map<WeekDay.Days,Set<OfferTimeData>> offerTimes;
+
 
 
     public Offer toOffer() {
@@ -104,5 +106,19 @@ public class OfferData {
 
     public void setPartial(boolean partial) {
         this.partial = partial;
+    }
+
+    public Map<WeekDay.Days, Set<OfferTimeData>> getOfferTimes() {
+        return offerTimes;
+    }
+
+    public void setOfferTimes(Map<WeekDay.Days, Set<OfferTimeData>> offerTimes) {
+        this.offerTimes = offerTimes;
+    }
+
+    public OfferData addOfferTimes(WeekDay.Days weekDay, OfferTimeData... offerTimeDatas) {
+        if ( null == this.offerTimes ) this.offerTimes = new HashMap<>();
+        this.offerTimes.put(weekDay, new HashSet<>(Arrays.asList(offerTimeDatas)));
+        return this;
     }
 }

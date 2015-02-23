@@ -1,5 +1,8 @@
 package ru.yesdo.service;
 
+import org.neo4j.graphdb.index.Index;
+import org.springframework.data.neo4j.conversion.Result;
+import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,15 +11,15 @@ import ru.yesdo.db.repository.MerchantRepository;
 import ru.yesdo.db.repository.OfferRepository;
 import ru.yesdo.db.repository.ProductRepository;
 import ru.yesdo.exception.AlreadyExistException;
-import ru.yesdo.graph.repository.ActivityGraphRepository;
-import ru.yesdo.graph.repository.MerchantGraphRepository;
-import ru.yesdo.graph.repository.OfferGraphRepository;
-import ru.yesdo.graph.repository.ProductGraphRepository;
+import ru.yesdo.graph.repository.*;
 import ru.yesdo.model.*;
 import ru.yesdo.model.data.MerchantData;
 import ru.yesdo.model.data.OfferData;
+import ru.yesdo.model.data.OfferTimeData;
 
 import javax.annotation.Resource;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by lameroot on 18.02.15.
@@ -40,6 +43,10 @@ public class MerchantService {
     private OfferRepository offerRepository;
     @Resource
     private OfferGraphRepository offerGraphRepository;
+    @Resource
+    private Neo4jTemplate neo4jTemplate;
+    @Resource
+    private WeekDayGraphRepository weekDayGraphRepository;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Merchant create(MerchantData merchantData) {
@@ -75,9 +82,27 @@ public class MerchantService {
         offer.setMerchant(merchant);
         offer.setProduct(product);
 
+
         offerRepository.save(offer);
         if ( offerData.isPartial() ) {
             offerGraphRepository.save(offer);
+            if ( null != offerData.getOfferTimes() && !offerData.getOfferTimes().isEmpty() ) {
+                for (Map.Entry<WeekDay.Days, Set<OfferTimeData>> entry : offerData.getOfferTimes().entrySet()) {
+                    WeekDay.Days day = entry.getKey();
+                    Set<OfferTimeData> offerTimeDatas = entry.getValue();
+                    WeekDay weekDay = weekDayGraphRepository.findBySchemaPropertyValue("day", day);
+                    for (OfferTimeData offerTimeData : offerTimeDatas) {
+                        //OfferTime oft = weekDayGraphRepository.createDuplicateRelationshipBetween(weekDay, offer, OfferTime.class, "OFFER_TIME");
+                        OfferTime oft = neo4jTemplate.createRelationshipBetween(weekDay,offer,OfferTime.class,"OFFER_TIME",true);
+                        oft.setStartTime(offerTimeData.getStartTime());
+                        oft.setFinishTime(offerTimeData.getFinishTime());
+                        oft = neo4jTemplate.save(oft);
+                        offer.addOfferTime(oft);
+                    }
+                }
+                offerGraphRepository.save(offer);
+
+            }
         }
 
         return offer;
