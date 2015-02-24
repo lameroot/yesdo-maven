@@ -1,7 +1,5 @@
 package ru.yesdo.service;
 
-import org.neo4j.graphdb.index.Index;
-import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -82,28 +80,26 @@ public class MerchantService {
         offer.setMerchant(merchant);
         offer.setProduct(product);
 
-
         offerRepository.save(offer);
         if ( offerData.isPartial() ) {
             offerGraphRepository.save(offer);
             if ( null != offerData.getOfferTimes() && !offerData.getOfferTimes().isEmpty() ) {
+                offer.setOfferWorkTime(JsonUtil.toSafeJson(offerData.getOfferTimes()));
                 for (Map.Entry<WeekDay.Days, Set<OfferTimeData>> entry : offerData.getOfferTimes().entrySet()) {
                     WeekDay.Days day = entry.getKey();
                     Set<OfferTimeData> offerTimeDatas = entry.getValue();
                     WeekDay weekDay = weekDayGraphRepository.findBySchemaPropertyValue("day", day);
                     for (OfferTimeData offerTimeData : offerTimeDatas) {
-                        //OfferTime oft = weekDayGraphRepository.createDuplicateRelationshipBetween(weekDay, offer, OfferTime.class, "OFFER_TIME");
-                        OfferTime oft = neo4jTemplate.createRelationshipBetween(weekDay,offer,OfferTime.class,"OFFER_TIME",true);
+                        OfferTime oft = weekDayGraphRepository.createDuplicateRelationshipBetween(weekDay, offer, OfferTime.class, "OFFER_TIME");
                         oft.setStartTime(offerTimeData.getStartTime());
                         oft.setFinishTime(offerTimeData.getFinishTime());
                         oft = neo4jTemplate.save(oft);
                         offer.addOfferTime(oft);
                     }
                 }
-                offerGraphRepository.save(offer);
-
             }
         }
+
 
         return offer;
     }

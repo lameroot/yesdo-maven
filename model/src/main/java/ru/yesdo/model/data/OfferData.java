@@ -112,6 +112,20 @@ public class OfferData {
         return offerTimes;
     }
 
+    public static void main(String[] args) {
+        Map<WeekDay.Days, Set<OfferTimeData>> map = new HashMap<>();
+        Set<OfferTimeData> set = new HashSet<>();
+        set.add(new OfferTimeData().interval(1000, 2200));
+        set.add(new OfferTimeData().interval(1100,2100));
+        map.put(WeekDay.Days.FRIDAY,set);
+        map.put(WeekDay.Days.ALL_MONTH,set);
+
+        String s = JsonUtil.toSafeJson(map);
+        System.out.println(s);
+        Map<WeekDay.Days, Set<OfferTimeData>> map1 = JsonUtil.toSafeObject(Map.class,s);
+        System.out.println(map1);
+    }
+
     public void setOfferTimes(Map<WeekDay.Days, Set<OfferTimeData>> offerTimes) {
         this.offerTimes = offerTimes;
     }

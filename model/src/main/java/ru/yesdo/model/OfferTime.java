@@ -5,7 +5,7 @@ import org.springframework.data.neo4j.annotation.*;
 /**
  * Created by lameroot on 23.02.15.
  */
-@RelationshipEntity(type = "OFFER_TIME")
+@RelationshipEntity(type = "oft")
 public class OfferTime {
 
     @GraphId

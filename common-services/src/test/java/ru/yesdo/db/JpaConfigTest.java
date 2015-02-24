@@ -65,12 +65,12 @@ public class JpaConfigTest {
 
         return driverManagerDataSource;
 
-        /*
-        EmbeddedDatabaseFactoryBean bean = new EmbeddedDatabaseFactoryBean();
-        bean.setDatabaseType(EmbeddedDatabaseType.H2);
-        bean.afterPropertiesSet();
-        return bean.getObject();
-        */
+
+//        EmbeddedDatabaseFactoryBean bean = new EmbeddedDatabaseFactoryBean();
+//        bean.setDatabaseType(EmbeddedDatabaseType.H2);
+//        bean.afterPropertiesSet();
+//        return bean.getObject();
+
 
     }
 
