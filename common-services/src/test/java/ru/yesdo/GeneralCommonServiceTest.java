@@ -9,6 +9,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.data.neo4j.support.node.Neo4jHelper;
 import org.springframework.test.context.ActiveProfiles;
@@ -23,14 +24,12 @@ import ru.yesdo.graph.GraphConfigTest;
 import ru.yesdo.graph.repository.*;
 import ru.yesdo.model.*;
 import ru.yesdo.model.data.*;
-import ru.yesdo.service.ActivityService;
-import ru.yesdo.service.MerchantService;
-import ru.yesdo.service.ProductService;
-import ru.yesdo.service.UserService;
+import ru.yesdo.service.*;
 
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -87,6 +86,10 @@ public class GeneralCommonServiceTest extends TestCase {
     protected OfferRepository offerRepository;
     @Resource
     protected OfferGraphRepository offerGraphRepository;
+    @Resource
+    protected GeoDataImporter geoDataImporter;
+    @Resource
+    protected WeekDayGraphRepository weekDayGraphRepository;
 
 
     protected List<ActivityData> activityDatas = new ArrayList<>();
@@ -201,22 +204,22 @@ public class GeneralCommonServiceTest extends TestCase {
         userDatas.add(u14);
 
         ContactParam contactParam = new ContactParam("name", "stas", ContactParam.Type.PROFILE);
-        offerDatas.add(createOfferDataAsArray("m11","p11",100L,11.0,34.0,contactParam));
-        offerDatas.add(createOfferDataAsArray("m11","p12",110L,11.0,34.0,contactParam));
-        offerDatas.add(createOfferDataAsArray("m12","p13",120L,11.0,34.0,contactParam));
-        offerDatas.add(createOfferDataAsArray("m12","p14",140L,11.0,34.0,contactParam));
-        offerDatas.add(createOfferDataAsArray("m21","p21",200L,11.0,34.0,contactParam));
-        offerDatas.add(createOfferDataAsArray("m21","p22",210L,11.0,34.0,contactParam));
-        offerDatas.add(createOfferDataAsArray("m22","p23",220L,11.0,34.0,contactParam));
-        offerDatas.add(createOfferDataAsArray("m22","p24",230L,11.0,34.0,contactParam));
-        offerDatas.add(createOfferDataAsArray("m31","p31",300L,11.0,34.0,contactParam));
-        offerDatas.add(createOfferDataAsArray("m31","p32",310L,11.0,34.0,contactParam));
-        offerDatas.add(createOfferDataAsArray("m32","p33",320L,11.0,34.0,contactParam));
-        offerDatas.add(createOfferDataAsArray("m32","p34",330L,11.0,34.0,contactParam));
-        offerDatas.add(createOfferDataAsArray("m33","p35",340L,11.0,34.0,contactParam));
-        offerDatas.add(createOfferDataAsArray("m33","p36",350L,11.0,34.0,contactParam));
-        offerDatas.add(createOfferDataAsArray("m34","p37",360L,11.0,34.0,contactParam));
-        offerDatas.add(createOfferDataAsArray("m34","p38",370L,11.0,34.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m11","p11",100L,5.0,23.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m11","p12",110L,10.0,23.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m12","p13",120L,32.0,24.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m12","p14",140L,35.0,35.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m21","p21",200L,20.0,18.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m21","p22",210L,30.0,19.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m22","p23",220L,35.0,20.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m22","p24",230L,38.0,22.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m31","p31",300L,3.0,3.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m31","p32",310L,5.0,4.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m32","p33",320L,10.0,4.5,contactParam));
+        offerDatas.add(createOfferDataAsArray("m32","p34",330L,15.0,6.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m33","p35",340L,20.0,5.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m33","p36",350L,25.0,7.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m34","p37",360L,29.0,8.0,contactParam));
+        offerDatas.add(createOfferDataAsArray("m34","p38",370L,35.0,9.0,contactParam));
     }
 
     protected ActivityData createActivityData(String name, String... parents) {
@@ -288,6 +291,19 @@ public class GeneralCommonServiceTest extends TestCase {
     protected void createWeekDays() {
         for (WeekDay weekDay : weekDays) {
             neo4jTemplate.save(weekDay);
+        }
+    }
+
+    protected void createUnderground() {
+        try {
+            geoDataImporter.importUnderground(new ClassPathResource("metro_stations_msk.csv"), ",", new GeoDataImporter.SplitMethod() {
+                @Override
+                public GeoData split(String[] ar) {
+                    return new GeoData(ar[1],ar[10],Double.parseDouble(ar[3]),Double.parseDouble(ar[4]));
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

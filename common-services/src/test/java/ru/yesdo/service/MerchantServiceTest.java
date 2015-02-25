@@ -5,9 +5,14 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yesdo.GeneralCommonServiceTest;
 import ru.yesdo.model.*;
+import ru.yesdo.model.data.ContactData;
 import ru.yesdo.model.data.MerchantData;
+import ru.yesdo.model.data.OfferData;
+import ru.yesdo.model.data.OfferTimeData;
 
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Created by lameroot on 19.02.15.
@@ -67,5 +72,63 @@ public class MerchantServiceTest extends GeneralCommonServiceTest {
         neo4jTemplate.fetch(offers);
         assertEquals(1, offers.stream().filter(f -> f.getProduct().getTitle().equals("p21")).count());
         assertEquals(1, offers.stream().filter(f -> f.getProduct().getTitle().equals("p22")).count());
+    }
+
+    //http://www.lyonwj.com/mapping-the-worlds-airports-with-neo4j-spatial-and-openflights-part-1/
+    @Test
+    @Transactional
+    @Rollback(false)
+    public void testCreateOneOffer() {
+        createWeekDays();
+
+        Activity activity = new Activity();
+        activity.setName("activity_one");
+        activityGraphRepository.save(activity);
+        assertNotNull(activity.getGraphId());
+
+        Merchant merchant = new Merchant();
+        merchant.setName("merchant_one");
+        merchant.setTitle("merchant_one");
+        merchant.addActivity(activity);
+        merchantGraphRepository.save(merchant);
+        assertNotNull(merchant.getGraphId());
+
+        Product product = new Product();
+        product.setCode(UUID.randomUUID().toString());
+        product.setTitle("product_one");
+        product.setMerchant(merchant);
+        productGraphRepository.save(product);
+        assertNotNull(product.getGraphId());
+
+        OfferData offerData =
+            new OfferData().setAmount(10L).setPublicity(Publicity.PUBLIC).setProductType(ProductType.SERVICE).setContactData(
+                new ContactData().setLocation(10.0, 20.0));
+        offerData.addOfferTimes(WeekDay.Days.FRIDAY, new OfferTimeData().start(1000).finish(2000), new OfferTimeData().interval(1200, 1400))
+                .addOfferTimes(WeekDay.Days.MONDAY, new OfferTimeData().interval(1200, 1400));
+
+
+        Offer offer = offerData.toOffer();
+        offer.setMerchant(merchant);
+        offer.setProduct(product);
+
+        offerGraphRepository.save(offer);
+        if ( null != offerData.getOfferTimes() && !offerData.getOfferTimes().isEmpty() ) {
+            offer.setOfferWorkTime(JsonUtil.toSafeJson(offerData.getOfferTimes()));
+            for (Map.Entry<WeekDay.Days, Set<OfferTimeData>> entry : offerData.getOfferTimes().entrySet()) {
+                WeekDay.Days day = entry.getKey();
+                Set<OfferTimeData> offerTimeDatas = entry.getValue();
+                WeekDay weekDay = weekDayGraphRepository.findBySchemaPropertyValue("day", day);
+                for (OfferTimeData offerTimeData : offerTimeDatas) {
+                    OfferTime oft = weekDayGraphRepository.createDuplicateRelationshipBetween(weekDay, offer, OfferTime.class, "OFFER_TIME");
+                    oft.setStartTime(offerTimeData.getStartTime());
+                    oft.setFinishTime(offerTimeData.getFinishTime());
+                    oft = neo4jTemplate.save(oft);
+                    offer.addOfferTime(oft);
+                }
+            }
+        }
+        assertNotNull(offer.getGraphId());
+
+
     }
 }

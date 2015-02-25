@@ -58,6 +58,9 @@ public class ProductService {
     public List<Product> findByCriteria(SearchProductCriteria criteria) {
         //Execute query =
 
+        //ищем по диапазону цен в оффере
+        //ищем по координатам в оффере (рядом)
+
         return null;
     }
 

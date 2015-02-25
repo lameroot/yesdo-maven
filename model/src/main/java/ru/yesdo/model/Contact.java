@@ -110,8 +110,9 @@ public class Contact {
     }
 
 
-    public void setLocation(double lon, double lat) {
+    public Contact setLocation(double lon, double lat) {
         this.wkt = String.format("POINT( %s %s )",lon,lat).replace(",",".");
+        return this;
     }
 
     public String getLocation() {
@@ -157,5 +158,16 @@ public class Contact {
 
     public void setType(ContactType type) {
         this.type = type;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Contact{");
+        sb.append("id=").append(id);
+        sb.append(", graphId=").append(graphId);
+        sb.append(", wkt='").append(wkt).append('\'');
+        sb.append(", type=").append(type);
+        sb.append('}');
+        return sb.toString();
     }
 }
