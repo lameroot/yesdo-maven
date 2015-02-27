@@ -86,10 +86,12 @@ public class GeneralCommonServiceTest extends TestCase {
     protected OfferRepository offerRepository;
     @Resource
     protected OfferGraphRepository offerGraphRepository;
-    @Resource
-    protected GeoDataImporter geoDataImporter;
+//    @Resource
+//    protected GeoDataImporter geoDataImporter;
     @Resource
     protected WeekDayGraphRepository weekDayGraphRepository;
+    @Resource
+    protected ContactGraphRepository contactGraphRepository;
 
 
     protected List<ActivityData> activityDatas = new ArrayList<>();
@@ -294,7 +296,9 @@ public class GeneralCommonServiceTest extends TestCase {
         }
     }
 
+
     protected void createUnderground() {
+        /*
         try {
             geoDataImporter.importUnderground(new ClassPathResource("metro_stations_msk.csv"), ",", new GeoDataImporter.SplitMethod() {
                 @Override
@@ -305,7 +309,9 @@ public class GeneralCommonServiceTest extends TestCase {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        */
     }
+
 
     protected void createActivities() {
         activityDatas.stream().forEach(activityData -> createActivity(activityData));

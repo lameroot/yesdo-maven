@@ -57,19 +57,19 @@ public class JpaConfigTest {
     public DataSource datasource() {
 
 
-        DriverManagerDataSource driverManagerDataSource = new DriverManagerDataSource();
-        driverManagerDataSource.setDriverClassName("org.h2.Driver");
-        //driverManagerDataSource.setUrl("jdbc:h2:~/yesdo");
-        driverManagerDataSource.setUrl("jdbc:h2:tcp://localhost/server~/yesdo");
-        driverManagerDataSource.setUsername("sa");
+//        DriverManagerDataSource driverManagerDataSource = new DriverManagerDataSource();
+//        driverManagerDataSource.setDriverClassName("org.h2.Driver");
+//        //driverManagerDataSource.setUrl("jdbc:h2:~/yesdo");
+//        driverManagerDataSource.setUrl("jdbc:h2:tcp://localhost/server~/yesdo");
+//        driverManagerDataSource.setUsername("sa");
+//
+//        return driverManagerDataSource;
 
-        return driverManagerDataSource;
 
-
-//        EmbeddedDatabaseFactoryBean bean = new EmbeddedDatabaseFactoryBean();
-//        bean.setDatabaseType(EmbeddedDatabaseType.H2);
-//        bean.afterPropertiesSet();
-//        return bean.getObject();
+        EmbeddedDatabaseFactoryBean bean = new EmbeddedDatabaseFactoryBean();
+        bean.setDatabaseType(EmbeddedDatabaseType.H2);
+        bean.afterPropertiesSet();
+        return bean.getObject();
 
 
     }

@@ -100,7 +100,7 @@ public class MerchantService {
             }
         }
 
-
         return offer;
     }
+
 }

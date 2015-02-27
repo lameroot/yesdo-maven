@@ -1,6 +1,9 @@
 package ru.yesdo.service;
 
 import org.junit.Test;
+import org.springframework.data.geo.Point;
+import org.springframework.data.geo.Polygon;
+import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yesdo.GeneralCommonServiceTest;
@@ -129,6 +132,8 @@ public class MerchantServiceTest extends GeneralCommonServiceTest {
         }
         assertNotNull(offer.getGraphId());
 
+        Result<Contact> contacts = contactGraphRepository.findWithinShape(Contact.LOCATION_INDEX_NAME, new Polygon(new Point(10.0, 20.0), new Point(20.0, 30), new Point(30.0, 40.0)));
+        assertNotNull(contacts);
 
     }
 }
