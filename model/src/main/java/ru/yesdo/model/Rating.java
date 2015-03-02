@@ -15,7 +15,7 @@ public class Rating {
     @StartNode @Fetch
     private User user;
     @EndNode @Fetch
-    private Offer offer;
+    private Product product;
     @GraphProperty
     private int stars;
     @GraphProperty
@@ -43,12 +43,12 @@ public class Rating {
         this.user = user;
     }
 
-    public Offer getOffer() {
-        return offer;
+    public Product getProduct() {
+        return product;
     }
 
-    public void setOffer(Offer offer) {
-        this.offer = offer;
+    public void setProduct(Product product) {
+        this.product = product;
     }
 
     public int getStars() {

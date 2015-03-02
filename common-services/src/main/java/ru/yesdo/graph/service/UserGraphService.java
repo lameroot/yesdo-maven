@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.yesdo.graph.repository.MerchantGraphRepository;
 import ru.yesdo.graph.repository.UserGraphRepository;
 import ru.yesdo.model.Offer;
+import ru.yesdo.model.Product;
 import ru.yesdo.model.Rating;
 import ru.yesdo.model.User;
 import ru.yesdo.model.data.UserData;
@@ -35,8 +36,8 @@ public class UserGraphService {
         return user;
     }
 
-    public Rating rate(Offer offer, User user, int stars, String comment) {
-        final Rating rating = neo4jTemplate.createRelationshipBetween(user, offer, Rating.class, "RATED", false);
+    public Rating rate(Product product, User user, int stars, String comment) {
+        final Rating rating = neo4jTemplate.createRelationshipBetween(user, product, Rating.class, "RATED", false);
         rating.rate(stars, comment);
         return neo4jTemplate.save(rating);
     }
