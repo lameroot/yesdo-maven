@@ -20,7 +20,8 @@ import java.util.Set;
 public class ActivityServiceTest extends GeneralCommonServiceTest {
 
     @Test
-    public void testCreateWeeDays() {
+    @Transactional
+    public void testCreateWeekDays() {
         createWeekDays();
     }
 

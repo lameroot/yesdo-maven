@@ -37,62 +37,8 @@ import java.util.*;
  * Date: 19.02.2015
  * Time: 16:32
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
-        JpaConfigTest.class,
-        GraphConfigTest.class,
-        CommonServicesConfig.class
-})
-@ActiveProfiles(value = "test")
-public class GeneralCommonServiceTest extends TestCase {
 
-    @Resource
-    protected ApplicationContext applicationContext;
-    @Autowired(required = false)
-    protected Neo4jTemplate neo4jTemplate;
-    @Resource
-    protected PlatformTransactionManager transactionManager;
-    @Resource
-    protected GraphDatabaseService graphDatabaseService;
-    @Resource
-    protected SpatialDatabaseService spatialDatabaseService;
-    @PersistenceContext
-    protected EntityManager entityManager;
-    @Resource
-    protected ActivityRepository activityRepository;
-    @Resource
-    protected ActivityGraphRepository activityGraphRepository;
-    @Resource
-    protected ActivityService activityService;
-    @Resource
-    protected MerchantRepository merchantRepository;
-    @Resource
-    protected MerchantGraphRepository merchantGraphRepository;
-    @Resource
-    protected MerchantService merchantService;
-    @Resource
-    protected ProductService productService;
-    @Resource
-    protected ProductRepository productRepository;
-    @Resource
-    protected ProductGraphRepository productGraphRepository;
-    @Resource
-    protected UserRepository userRepository;
-    @Resource
-    protected UserGraphRepository userGraphRepository;
-    @Resource
-    protected UserService userService;
-    @Resource
-    protected OfferRepository offerRepository;
-    @Resource
-    protected OfferGraphRepository offerGraphRepository;
-    @Resource
-    protected GeoDataImporter geoDataImporter;
-    @Resource
-    protected WeekDayGraphRepository weekDayGraphRepository;
-    @Resource
-    protected ContactGraphRepository contactGraphRepository;
-
+public class GeneralCommonServiceTest extends AbstractCommonServiceTest {
 
     protected List<ActivityData> activityDatas = new ArrayList<>();
     protected List<MerchantData> merchantDatas = new ArrayList<>();

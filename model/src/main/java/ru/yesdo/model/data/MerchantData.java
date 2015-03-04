@@ -14,6 +14,7 @@ public class MerchantData {
     private String title;
     private Set<Activity> activities;
     private boolean partial = true;
+    private ContactData contactData;
 
     public String getName() {
         return name;
@@ -55,6 +56,15 @@ public class MerchantData {
 
     public MerchantData setPartial(boolean partial) {
         this.partial = partial;
+        return this;
+    }
+
+    public ContactData getContactData() {
+        return contactData;
+    }
+
+    public MerchantData setContactData(ContactData contactData) {
+        this.contactData = contactData;
         return this;
     }
 }

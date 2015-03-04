@@ -32,7 +32,7 @@ import javax.persistence.PersistenceContext;
 @Configuration
 @EnableTransactionManagement(mode = AdviceMode.ASPECTJ)
 @EnableNeo4jRepositories(basePackages = "ru.yesdo.graph.repository")
-@Profile("test")
+//@Profile("test")
 public class GraphConfigTest
         extends org.springframework.data.neo4j.config.Neo4jConfiguration
     //extends CrossStoreNeo4jConfiguration

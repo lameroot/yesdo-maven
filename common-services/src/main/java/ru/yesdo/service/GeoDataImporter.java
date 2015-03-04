@@ -1,5 +1,6 @@
 package ru.yesdo.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
@@ -17,6 +18,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -47,6 +50,26 @@ public class GeoDataImporter {
             }
         }
 
+    }
+
+    public List<GeoData> importUndergroundToList(Resource resource, String splitter, SplitMethod splitMethod) throws IOException {
+        List<GeoData> geoDatas = new ArrayList<>();
+        BufferedReader reader = null;
+
+        try {
+            reader = new BufferedReader(new FileReader(resource.getFile()));
+            String line = null;
+            while ( null != (line = reader.readLine()) ) {
+                String[] ar = line.split(splitter);
+                GeoData geoData = splitMethod.split(ar);
+                geoDatas.add(geoData);
+            }
+        } finally {
+            if ( null != reader ) {
+                reader.close();
+            }
+        }
+        return geoDatas;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
