@@ -67,4 +67,13 @@ public class MerchantData {
         this.contactData = contactData;
         return this;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("MerchantData{");
+        sb.append("name='").append(name).append('\'');
+        sb.append(", title='").append(title).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

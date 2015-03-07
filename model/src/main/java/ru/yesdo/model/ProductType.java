@@ -8,5 +8,6 @@ package ru.yesdo.model;
 public enum ProductType {
     CONCERT,
     SERVICE,
-    OTHER
+    OTHER,
+    CINEMA
 }

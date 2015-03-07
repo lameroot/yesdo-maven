@@ -3,6 +3,7 @@ package ru.yesdo.model;
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.*;
 import org.springframework.data.neo4j.support.index.IndexType;
+import ru.yesdo.model.data.ContactData;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -58,6 +59,11 @@ public class Product {
 
     @Column(name = "enabled")
     private boolean enabled;
+
+    @RelatedTo(type = "PRODUCT_CONTACT", direction = Direction.OUTGOING)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "fk_contact_id", nullable = true)
+    private Contact contact;
 
 
     public Long getId() {
@@ -115,6 +121,14 @@ public class Product {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public Contact getContact() {
+        return contact;
+    }
+
+    public void setContact(Contact contact) {
+        this.contact = contact;
     }
 
     @Override

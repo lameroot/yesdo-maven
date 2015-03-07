@@ -5,6 +5,8 @@ import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.support.index.IndexType;
 
+import java.util.Calendar;
+
 /**
  * Created by lameroot on 23.02.15.
  */
@@ -24,8 +26,26 @@ public class WeekDay {
         ALL_WEEK,
         WEEKEND,
         ALL_MONTH,
-        ALL_YEAR
+        ALL_YEAR;
 
+        public static Days byDate(Calendar calendar) {
+            int i = calendar.get(Calendar.DAY_OF_WEEK);
+            for (Days days : values()) {
+                if ( days.ordinal() + 1 == i ) return days;
+            }
+            return null;
+        }
+
+    }
+
+    public static void main(String[] args) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.MONTH,5);
+        System.out.println(calendar.get(Calendar.MONTH));
+        System.out.println(calendar.get(Calendar.DAY_OF_WEEK));
+
+        Days days = Days.byDate(Calendar.getInstance());
+        System.out.println(days);
     }
 
     @GraphId

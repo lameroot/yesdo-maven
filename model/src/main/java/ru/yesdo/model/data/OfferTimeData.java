@@ -1,5 +1,8 @@
 package ru.yesdo.model.data;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * Created by lameroot on 23.02.15.
  */
@@ -38,5 +41,23 @@ public class OfferTimeData {
         start(startTime);
         finish(finishTime);
         return this;
+    }
+    public OfferTimeData start(Date date) {
+        String s = new SimpleDateFormat("HHmm").format(date);
+        return start(Integer.parseInt(s));
+    }
+
+    public OfferTimeData finish(Date date) {
+        String s = new SimpleDateFormat("HHmm").format(date);
+        return finish(Integer.parseInt(s));
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("OfferTimeData{");
+        sb.append("startTime=").append(startTime);
+        sb.append(", finishTime=").append(finishTime);
+        sb.append('}');
+        return sb.toString();
     }
 }

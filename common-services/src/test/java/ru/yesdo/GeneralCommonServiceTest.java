@@ -1,34 +1,15 @@
 package ru.yesdo;
 
-import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.neo4j.gis.spatial.SpatialDatabaseService;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.data.neo4j.support.node.Neo4jHelper;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.test.context.transaction.BeforeTransaction;
-import org.springframework.transaction.PlatformTransactionManager;
-import ru.yesdo.db.JpaConfigTest;
-import ru.yesdo.db.repository.*;
-import ru.yesdo.graph.GraphConfigTest;
-import ru.yesdo.graph.repository.*;
 import ru.yesdo.model.*;
 import ru.yesdo.model.data.*;
 import ru.yesdo.service.*;
 
-import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.io.IOException;
 import java.util.*;
 
@@ -204,7 +185,7 @@ public class GeneralCommonServiceTest extends AbstractCommonServiceTest {
 
     protected OfferData createOfferData(Long amount, double lon, double lat, ContactParam...contactParams) {
         return new OfferData().setAmount(amount).setPublicity(Publicity.PUBLIC).setProductType(ProductType.SERVICE).setContactData(
-                new ContactData().setLocation(lon, lat).addContactParams(contactParams)
+                new ContactData().setLocation(lon, lat).addContactParam(contactParams)
         );
     }
 

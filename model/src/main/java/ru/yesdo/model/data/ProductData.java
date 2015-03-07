@@ -15,6 +15,7 @@ public class ProductData {
     private boolean enabled;
     private String code;
     private boolean partial = true;
+    private ContactData contactData;
 
     //add user, raitings, friends
 
@@ -71,5 +72,13 @@ public class ProductData {
     public ProductData setCode(String code) {
         this.code = code;
         return this;
+    }
+
+    public ContactData getContactData() {
+        return contactData;
+    }
+
+    public void setContactData(ContactData contactData) {
+        this.contactData = contactData;
     }
 }

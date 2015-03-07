@@ -53,10 +53,10 @@ public class Contact {
     private ContactType type;
 
     public static enum ContactType {
-        OFFER,
-        MERCHANT,
-        USER,
-        PRODUCT
+        OFFER_CONTACT,
+        MERCHANT_CONTACT,
+        USER_CONTACT,
+        PRODUCT_CONTACT
     }
 
     public Contact addContactParam(String name, Object value, ContactParam.Type type) throws IOException {

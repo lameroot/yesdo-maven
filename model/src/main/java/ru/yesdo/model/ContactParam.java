@@ -19,7 +19,8 @@ public class ContactParam {
     public enum Type {
         GEO,
         PROFILE,
-        ADDRESS
+        ADDRESS,
+        DESCRIPTION
     }
 
     private String name;

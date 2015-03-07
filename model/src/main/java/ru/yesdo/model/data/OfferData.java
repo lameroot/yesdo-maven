@@ -32,7 +32,7 @@ public class OfferData {
 
         if ( null != getContactData() ) {
             Contact contact = getContactData().toContact();
-            contact.setType(Contact.ContactType.OFFER);
+            contact.setType(Contact.ContactType.OFFER_CONTACT);
             offer.setContact(contact);
         }
         return offer;
@@ -112,19 +112,6 @@ public class OfferData {
         return offerTimes;
     }
 
-    public static void main(String[] args) {
-        Map<WeekDay.Days, Set<OfferTimeData>> map = new HashMap<>();
-        Set<OfferTimeData> set = new HashSet<>();
-        set.add(new OfferTimeData().interval(1000, 2200));
-        set.add(new OfferTimeData().interval(1100,2100));
-        map.put(WeekDay.Days.FRIDAY,set);
-        map.put(WeekDay.Days.ALL_MONTH,set);
-
-        String s = JsonUtil.toSafeJson(map);
-        System.out.println(s);
-        Map<WeekDay.Days, Set<OfferTimeData>> map1 = JsonUtil.toSafeObject(Map.class,s);
-        System.out.println(map1);
-    }
 
     public void setOfferTimes(Map<WeekDay.Days, Set<OfferTimeData>> offerTimes) {
         this.offerTimes = offerTimes;
@@ -134,5 +121,29 @@ public class OfferData {
         if ( null == this.offerTimes ) this.offerTimes = new HashMap<>();
         this.offerTimes.put(weekDay, new HashSet<>(Arrays.asList(offerTimeDatas)));
         return this;
+    }
+
+    public OfferData addOfferTime(WeekDay.Days weekDay, OfferTimeData offerTimeData) {
+        if ( null == this.offerTimes ) this.offerTimes = new HashMap<>();
+        Set<OfferTimeData> offerTimeDatas = new HashSet<>();
+        if ( this.offerTimes.containsKey(weekDay) ) {
+            offerTimeDatas = this.offerTimes.get(weekDay);
+        }
+        offerTimeDatas.add(offerTimeData);
+        this.offerTimes.put(weekDay,offerTimeDatas);
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("OfferData{");
+        sb.append("amount=").append(amount);
+        sb.append(", enabled=").append(enabled);
+        sb.append(", publicity=").append(publicity);
+        sb.append(", productType=").append(productType);
+        sb.append(", expirationAt=").append(expirationAt);
+        sb.append(", partial=").append(partial);
+        sb.append('}');
+        return sb.toString();
     }
 }

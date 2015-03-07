@@ -16,7 +16,7 @@ public class ContactData {
     private Set<ContactParam> contactParams = new HashSet<>();
     private double lon, lat;
 
-    public ContactData addContactParams(ContactParam... contactParams) {
+    public ContactData addContactParam(ContactParam... contactParams) {
         for (ContactParam contactParam : contactParams) {
             this.contactParams.add(contactParam);
         }

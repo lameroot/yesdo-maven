@@ -70,7 +70,7 @@ public class Offer {
     @Column(name = "expiration_at")
     private Date expirationAt;//дата истечения возможности использования продуктом
 
-    @RelatedTo(type = "CONTACT", direction = Direction.OUTGOING)
+    @RelatedTo(type = "OFFER_CONTACT", direction = Direction.OUTGOING)
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "fk_contact_id", nullable = true)
     private Contact contact;
