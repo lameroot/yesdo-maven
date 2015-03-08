@@ -2,7 +2,9 @@ package ru.yesdo.model.data;
 
 import ru.yesdo.model.Activity;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -14,6 +16,12 @@ public class ActivityData {
     private String title;
     private Set<Activity> parents;
     private boolean partial = true;
+    private Map<String,Object> params = new HashMap<>();
+
+    public ActivityData(){}
+    public ActivityData(String name) {
+        this.name = name;
+    }
 
     public String getTitle() {
         return title;
@@ -54,6 +62,19 @@ public class ActivityData {
 
     public ActivityData setPartial(boolean partial) {
         this.partial = partial;
+        return this;
+    }
+
+    public Map<String, Object> getParams() {
+        return params;
+    }
+
+    public void setParams(Map<String, Object> params) {
+        this.params = params;
+    }
+
+    public ActivityData addParam(String key, Object value) {
+        this.params.put(key,value);
         return this;
     }
 }

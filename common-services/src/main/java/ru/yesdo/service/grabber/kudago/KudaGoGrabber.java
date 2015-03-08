@@ -1,6 +1,5 @@
-package ru.yesdo.service.grabber;
+package ru.yesdo.service.grabber.kudago;
 
-import jdk.nashorn.internal.parser.JSONParser;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -8,12 +7,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.print.Doc;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by lameroot on 01.03.15.

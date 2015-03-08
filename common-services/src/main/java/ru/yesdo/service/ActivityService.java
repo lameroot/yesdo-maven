@@ -46,6 +46,9 @@ public class ActivityService {
         Activity activity = new Activity();
         activity.setTitle(activityData.getTitle());
         activity.setName(activityData.getName());
+        for (Map.Entry<String, Object> entry : activityData.getParams().entrySet()) {
+            activity.addParam(entry.getKey(),entry.getValue());
+        }
         if ( null != activityData.getParents() ) {
             for (Activity parent : activityData.getParents()) {
                 if ( null == (parent = activityRepository.findByName(parent.getName())) )  throw new IllegalArgumentException("Activity with name: " + parent.getName() + " not found in db");

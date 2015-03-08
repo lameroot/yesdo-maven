@@ -1,15 +1,20 @@
-package ru.yesdo.service.grabber;
+package ru.yesdo.service.grabber.afisha;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.LongRange;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.yesdo.model.*;
 import ru.yesdo.model.data.*;
 import ru.yesdo.service.GeoDataImporter;
+import ru.yesdo.service.grabber.AbstractGrabber;
+import ru.yesdo.service.grabber.Grabber;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -24,7 +29,7 @@ import java.util.regex.Pattern;
  * Created by lameroot on 04.03.15.
  */
 @Service
-public class AfishaGrabber {
+public class AfishaGrabber extends AbstractGrabber {
 
     private String url = "http://www.afisha.ru/msk/";
     private String cinemaListUrl = url + "cinemas/cinema_list/";
@@ -51,63 +56,9 @@ public class AfishaGrabber {
                 undergroundCinemaListMap.get(title).setGeoData(underground);
             }
         }
-        for (Map.Entry<String, AfishaUndergroundCinemaList> entry : undergroundCinemaListMap.entrySet()) {
-            System.out.println(entry.getKey() + ":" + entry.getValue().getGeoData());
-        }
-    }
-
-    private static class AfishaUndergroundCinemaList {
-        private String title;
-        private String url;
-        private GeoData geoData;
-
-
-        public AfishaUndergroundCinemaList(String title, String url) {
-            this.title = title.toLowerCase();
-            this.url = url;
-
-
-        }
-
-        public AfishaUndergroundCinemaList setGeoData(GeoData geoData) {
-            this.geoData = geoData;
-            return this;
-        }
-
-        public GeoData getGeoData() {
-            return geoData;
-        }
-    }
-
-    private static class AfishaCinema {
-        private String url;
-        private String context;
-        private Integer id;
-        private String mapUrl;
-        private String regexp = "^http://www.afisha.ru/(\\w+)/cinema/(\\d+)/$";
-        private Pattern pattern = Pattern.compile(regexp);
-        private String city;
-        private String scheduleUrl;
-
-        public AfishaCinema(String url) {
-            this.url = url;
-            Matcher matcher = pattern.matcher(url);
-            if ( matcher.matches() ) {
-                this.city = matcher.group(1);
-                this.id = Integer.parseInt(matcher.group(2));
-            }
-
-            this.context = "http://www.afisha.ru/" + city + "/";
-            this.mapUrl = this.context + "cinema/" + "map/" + id + "/";
-            this.scheduleUrl = this.context + "schedule_cinema_place/" + id + "/";
-        }
-    }
-
-    private static class AfishaMerchantData {
-        MerchantData merchantData;
-        Map<Movie, OfferData> movieSetMap = new HashMap<>();
-
-
+//        for (Map.Entry<String, AfishaUndergroundCinemaList> entry : undergroundCinemaListMap.entrySet()) {
+//            System.out.println(entry.getKey() + ":" + entry.getValue().getGeoData());
+//        }
     }
 
     private Map<String,AfishaUndergroundCinemaList>  fillUnderground() throws IOException {
@@ -150,8 +101,37 @@ public class AfishaGrabber {
 
             }
         }
+    }
 
+    private Cinema getCinema(String urlCinema) throws Exception {
+        Cinema cinema = new Cinema(urlCinema);
 
+        Document documentCinema = Jsoup.connect(urlCinema).get();
+        String cinemaName = documentCinema.select(".b-object-header").select("h1").text();
+        cinema.setTitle(cinemaName);
+        cinema.setName(cinemaName);//todo: unique
+
+        ContactData contactData = new ContactData();
+        String address = documentCinema.select("div").select(".m-margin-btm").text();
+        System.out.println("address = " + address);
+        if ( null != address ) {
+            String[] arrayOfPrices = StringUtils.substringsBetween(address, "Билеты", "р")[0].trim().split("–");
+            long startPrice = Long.parseLong(arrayOfPrices[0]) * 100;
+            long finishPrice = Long.parseLong(arrayOfPrices[1]) * 100;
+
+            cinema.startPrice = startPrice;
+            cinema.finishPrice = finishPrice;
+        }
+
+        contactData.addContactParam(new ContactParam(ContactParam.ADDRESS_PARAM, address, ContactParam.Type.ADDRESS));
+
+        Document documentMapCinema = Jsoup.connect(cinema.mapUrl).get();
+
+        double latitude = Double.parseDouble(documentMapCinema.select("meta[property=og:latitude]").attr("content"));
+        double longitude = Double.parseDouble(documentMapCinema.select("meta[property=og:longitude]").attr("content"));
+        contactData.setLocation(longitude,latitude);
+
+        return cinema;
     }
 
     private AfishaMerchantData cinema(AfishaCinema afishaCinema) throws Exception {
@@ -167,6 +147,10 @@ public class AfishaGrabber {
         merchantData.setName(cinemaName);//todo
 
         String address = documentCinema.select("div").select(".m-margin-btm").text();
+        String[] arrayOfPrices = StringUtils.substringsBetween(address,"Билеты","р")[0].trim().split("–");
+        long startPrice = Long.parseLong(arrayOfPrices[0]) * 100;
+        long endPrices = Long.parseLong(arrayOfPrices[1]) * 100;
+
         contactData.addContactParam(new ContactParam(ContactParam.ADDRESS_PARAM, address, ContactParam.Type.ADDRESS));
 
         //System.out.println("map url = " + afishaCinema.mapUrl);
@@ -195,11 +179,12 @@ public class AfishaGrabber {
             for (Element element : elements) {
                 String movieUrl = element.select("div").select(".clearfix").select("a").attr("href");
                 Movie movie = getMovie(movieUrl);
+                movie.intervalPrices = new LongRange(startPrice,endPrices);
                 //System.out.println(movie);
-                OfferData offerData = createOfferData(movie,element,current);
+                Set<OfferData> offerDatas = createOfferData(movie,element,current);
                 //System.out.println(offerData.getOfferTimes());
 
-                afishaMerchantData.movieSetMap.put(movie,offerData);
+                afishaMerchantData.movieSetMap.put(movie,offerDatas);
             }
 
             current.add(Calendar.DAY_OF_WEEK,1);
@@ -208,17 +193,33 @@ public class AfishaGrabber {
         return afishaMerchantData;
     }
 
-    private OfferData createOfferData(Movie movie, Element element, Calendar date) throws ParseException {
-        OfferData offerData = new OfferData();
+    private Set<OfferData> createOfferData(Movie movie, Element element, Calendar date) throws ParseException {
+        Set<OfferData> offerDatas = new HashSet<>();
+
+
 
         WeekDay.Days days = WeekDay.Days.byDate(date);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
         Elements timeInsides = element.select(".time-inside").select("span");
         for (Element timeInside : timeInsides) {
+            OfferData offerData = new OfferData();
+
             Date dateInside = dateFormat.parse(timeInside.text());
             Calendar cal = Calendar.getInstance();
             cal.setTime(dateInside);
+
+            long amount = 0L;
+            LongRange intervalPrices = movie.intervalPrices;
+            if ( null != intervalPrices ) {
+                Long min = intervalPrices.getMinimumLong();
+                Long max = intervalPrices.getMaximumLong();
+
+                int hours = cal.get(Calendar.HOUR_OF_DAY);
+                if ( hours < 12 ) amount = min;
+                else if ( 12 <= hours && hours < 17 ) amount = (max - min) /2;
+                else amount = max;
+            }
 
             OfferTimeData offerTimeData = new OfferTimeData();
             cal.add(Calendar.MINUTE,movie.duration);
@@ -226,14 +227,18 @@ public class AfishaGrabber {
             offerTimeData.finish(cal.getTime());
 
             offerData.addOfferTime(days, offerTimeData);
-        }
-        offerData.setContactData(movie.getContactData());
-        offerData.setProductType(ProductType.CINEMA);
-        offerData.setPublicity(Publicity.PUBLIC);
-        offerData.setEnabled(true);
-        offerData.setAmount(1000L);//todo
 
-        return offerData;
+            offerData.setContactData(movie.getContactData());
+            offerData.setProductType(ProductType.CINEMA);
+            offerData.setPublicity(Publicity.PUBLIC);
+            offerData.setEnabled(true);
+            offerData.setAmount(amount);
+
+            offerDatas.add(offerData);
+        }
+
+
+        return offerDatas;
     }
 
     private Movie getMovie(String movieUrl) throws IOException {
@@ -282,47 +287,7 @@ public class AfishaGrabber {
 
     }
 
-    public static class Movie extends ProductData {
-        private String director;
-        private Set<String> actors;
-        private String creation;
-        private String siteUrl;
-        private Set<Tag> tags;
-        private String description;
-        private Integer duration;
 
-        @Override
-        public ContactData getContactData() {
-            ContactData contact = new ContactData();
-            try {
-                contact.addContactParam(new ContactParam("MOVIE_DIRECTOR",director, ContactParam.Type.DESCRIPTION));
-                contact.addContactParam(new ContactParam("MOVIE_ACTORS", JsonUtil.toJson(actors), ContactParam.Type.DESCRIPTION));
-                contact.addContactParam(new ContactParam("MOVIE_CREATION", creation, ContactParam.Type.DESCRIPTION));
-                contact.addContactParam(new ContactParam("MOVIE_SITEURL", siteUrl, ContactParam.Type.DESCRIPTION));
-                contact.addContactParam(new ContactParam("MOVIE_DESCRIPTION", description, ContactParam.Type.DESCRIPTION));
-                contact.addContactParam(new ContactParam("MOVIE_DURATION", duration, ContactParam.Type.DESCRIPTION));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            return contact;
-        }
-
-        @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder("Movie{");
-            sb.append("tile='").append(getTitle()).append('\'');
-            sb.append("director='").append(director).append('\'');
-            sb.append(", actors=").append(actors);
-            sb.append(", creation='").append(creation).append('\'');
-            sb.append(", siteUrl='").append(siteUrl).append('\'');
-            sb.append(", tags=").append(tags);
-            sb.append(", description='").append(description).append('\'');
-            sb.append(", duration='").append(duration).append('\'');
-            sb.append('}');
-            return sb.toString();
-        }
-    }
 
 
     public static void main(String[] args) throws Exception {
@@ -336,16 +301,19 @@ public class AfishaGrabber {
         AfishaGrabber grabber = new AfishaGrabber();
         AfishaMerchantData merchantData = grabber.cinema(afishaCinema);
         System.out.println(merchantData.merchantData);
-        for (Map.Entry<Movie, OfferData> entry : merchantData.movieSetMap.entrySet()) {
+        for (Map.Entry<Movie, Set<OfferData>> entry : merchantData.movieSetMap.entrySet()) {
             System.out.println(entry.getKey());
             System.out.println(entry.getValue());
-            for (Map.Entry<WeekDay.Days, Set<OfferTimeData>> daysSetEntry : entry.getValue().getOfferTimes().entrySet()) {
-                System.out.println(daysSetEntry);
-            }
-            for (ContactParam contactParam : entry.getValue().getContactData().getContactParams()) {
-                System.out.println(contactParam);
-            }
             System.out.println("-------");
+            for (OfferData offerData : entry.getValue()) {
+                System.out.println(offerData);
+                for (Map.Entry<WeekDay.Days, Set<OfferTimeData>> daysSetEntry : offerData.getOfferTimes().entrySet()) {
+                    System.out.println(daysSetEntry.getKey() + ":" + daysSetEntry.getValue());
+                }
+                for (ContactParam contactParam : offerData.getContactData().getContactParams()) {
+                    System.out.println(contactParam);
+                }
+            }
         }
 //        System.out.println(merchantData.getContactData().getLat() + ":" + merchantData.getContactData().getLon());
 //        for (ContactParam contactParam : merchantData.getContactData().getContactParams()) {
@@ -358,5 +326,82 @@ public class AfishaGrabber {
 //            System.out.println(contactParam);
 //        }
 
+    }
+
+    private static final String AFISHA_URL_PARAM = "afisha_url_param";
+    private static final String AFISHA_PAGE_PARAM = "afisha_page_param";
+
+    @Override
+    public void grabActivities() {
+        ActivityData entertainmentData = new ActivityData("entertainment");
+        entertainmentData.setTitle("Равзлечения");
+        Activity entertainment = activityService.create(entertainmentData);
+        if ( null == entertainment ) throw new IllegalArgumentException("Unable to create activity: entertainment");
+
+        ActivityData cinemaData = new ActivityData("cinema");
+        cinemaData.setTitle("Кино");
+        cinemaData.addParent(entertainment);
+        //cinemaData.addParam(AFISHA_URL_PARAM,"http://www.afisha.ru/msk/cinema/");
+        Activity cinema = activityService.create(cinemaData);
+        if ( null == cinema ) throw new IllegalArgumentException("Unable to create activity: cinema");
+
+        ActivityData cinemasData = new ActivityData("cinemas");
+        cinemasData.setTitle("Кинотеатры");
+        cinemasData.addParent(cinema);
+        cinemasData.addParam(AFISHA_URL_PARAM, "http://www.afisha.ru/msk/cinemas/cinema_list/");
+        cinemasData.addParam(AFISHA_PAGE_PARAM, "page%d");
+        Activity cinemas = activityService.create(cinemasData);
+        if ( null == cinemas ) throw new IllegalArgumentException("Unable to create activity: cinemas");
+
+    }
+
+    @Override
+    public void grabMerchants(Integer count) throws Exception {
+        Page<Activity> page = activityService.findAll(new PageRequest(0, 100));
+        for (Activity activity : page) {
+            String url = null;
+            if ( null == (url = (String)activity.getParams().getProperty(AFISHA_URL_PARAM)) ) continue;
+            String pageParam = (String)activity.getParams().getProperty(AFISHA_PAGE_PARAM);
+            int pageNum = 1;
+            String urlConnect = url;
+            if ( null != pageParam ) urlConnect = url + String.format(pageParam,pageNum);
+            Elements objectList = null;
+            List<String> targetUrls = new ArrayList<>();
+            do {
+                System.out.println("url : " + urlConnect);
+                Document document = Jsoup.connect(urlConnect).get();
+                objectList = document.select("#objects-list").select("div").select(".places-list-item").select("a[id]");
+
+                for (Element listItem : objectList) {
+                    if ( null != count && count <= targetUrls.size() ) break;
+                    String href = listItem.attr("href");
+                    targetUrls.add(href);
+                }
+                if ( null != count && count <= targetUrls.size() ) break;
+                pageNum++;
+                urlConnect = url + String.format(pageParam,pageNum);
+
+            } while ( 0 < objectList.size() );
+
+            System.out.println("count merchants href = " + targetUrls.size());
+            List<Cinema> cinemas = new ArrayList<>();
+            for (String targetUrl : targetUrls) {
+                Cinema cinema = getCinema(targetUrl);
+                cinemas.add(cinema);
+            }
+            System.out.println("count cinemas = " + cinemas.size());
+            for (Cinema cinema : cinemas) {
+                cinema.addActivity(activity);
+                Merchant merchant = merchantService.create(cinema);
+                if ( null == merchant ) throw new IllegalArgumentException("Unable to create merchant: " + cinema);
+            }
+        }
+    }
+
+    @Override
+    public void grabProductAndOffers(boolean onlyProduct) throws Exception {
+        for (Merchant merchant : merchantGraphRepository.findAll()) {
+
+        }
     }
 }

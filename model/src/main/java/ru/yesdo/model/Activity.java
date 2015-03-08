@@ -1,7 +1,10 @@
 package ru.yesdo.model;
 
+import org.hibernate.annotations.Type;
 import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.*;
+import org.springframework.data.neo4j.fieldaccess.DynamicProperties;
+import org.springframework.data.neo4j.fieldaccess.DynamicPropertiesContainer;
 import org.springframework.data.neo4j.support.index.IndexType;
 
 import javax.persistence.*;
@@ -65,6 +68,10 @@ public class Activity {
     @RelatedTo(type = "MERCHANT", direction = Direction.OUTGOING)
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "activities")
     private Set<Merchant> merchants;//список мерчантов, которые находятся в этой активити
+
+    @Type(type = "ru.yesdo.model.DynamicPropertiesType")
+    @Column(name = "params")
+    private DynamicProperties params = new DynamicPropertiesContainer();
 
 
     public Activity() {
@@ -137,10 +144,21 @@ public class Activity {
         return this;
     }
 
-    //todo: протестировать
-    public Activity addChildren(Activity activity) {
-        if ( null == this.child ) this.child = new HashSet<>();
-        activity.addParent(this);
+    public DynamicProperties getParams() {
+        return params;
+    }
+
+    public void setParams(DynamicProperties params) {
+        this.params = params;
+    }
+
+    public Activity addParam(String key, Object value) {
+        if ( value instanceof String ) {
+            this.params.setProperty(key,value);
+        }
+        else {
+            this.params.setProperty(key, JsonUtil.toSafeJson(value));
+        }
         return this;
     }
 
