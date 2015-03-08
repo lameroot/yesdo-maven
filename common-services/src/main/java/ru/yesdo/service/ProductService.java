@@ -1,11 +1,13 @@
 package ru.yesdo.service;
 
 import org.neo4j.cypherdsl.grammar.Execute;
+import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yesdo.db.repository.MerchantRepository;
 import ru.yesdo.db.repository.ProductRepository;
+import ru.yesdo.exception.AlreadyExistException;
 import ru.yesdo.graph.repository.MerchantGraphRepository;
 import ru.yesdo.graph.repository.ProductGraphRepository;
 import ru.yesdo.model.Merchant;
@@ -30,14 +32,20 @@ public class ProductService {
     private MerchantRepository merchantRepository;
     @Resource
     private MerchantGraphRepository merchantGraphRepository;
+    @Resource
+    private Neo4jTemplate neo4jTemplate;
 
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Product create(ProductData productData) {
-        Product product = new Product();
+        if ( null == productData || null == productData.getMerchant() ) throw new IllegalArgumentException("ProductData is not valid");
+        Product product = productRepository.findByCode(productData.getCode());
+        if ( null != product ) throw new AlreadyExistException("Product with code: " + productData.getCode() + " already exist");
+        product = new Product();
         product.setTitle(productData.getTitle());
         product.setCreatedAt(productData.getCreatedAt());
         product.setCode(productData.getCode());
+
         Merchant merchant = merchantRepository.findByName(productData.getMerchant().getName());
         if ( null == merchant ) throw new IllegalArgumentException("Unable to find merchant with name: " + productData.getMerchant().getName());
         if ( productData.isPartial() ) {
@@ -55,6 +63,11 @@ public class ProductService {
         return product;
     }
 
+    public Product getOrCreate(ProductData productData) {
+        Product product = productGraphRepository.findByCode(productData.getCode());
+        if ( null != product ) return product;
+        else return create(productData);
+    }
     public List<Product> findByCriteria(SearchProductCriteria criteria) {
         //Execute query =
 

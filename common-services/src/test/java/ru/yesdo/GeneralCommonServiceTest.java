@@ -166,6 +166,10 @@ public class GeneralCommonServiceTest extends AbstractCommonServiceTest {
             Activity activity = new Activity(activityTitle);
             merchantData.addActivity(activity);
         }
+        ContactData contactData = new ContactData();
+        contactData.addContactParam(new ContactParam("test","this is test", ContactParam.Type.DESCRIPTION));
+        contactData.setType(Contact.ContactType.MERCHANT_CONTACT);
+        merchantData.setContactData(contactData);
         return merchantData;
     }
 

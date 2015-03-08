@@ -61,6 +61,11 @@ public class Merchant {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "merchant")
     private Set<Offer> offers = new HashSet<>();
 
+    @RelatedTo(type = "MERCHANT_CONTACT", direction = Direction.OUTGOING)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "fk_contact_id", nullable = true)
+    private Contact contact;
+
     public Merchant() {}
     public Merchant(String name) {
         this.name = name;
@@ -131,6 +136,14 @@ public class Merchant {
 
     public void setOffers(Set<Offer> offers) {
         this.offers = offers;
+    }
+
+    public Contact getContact() {
+        return contact;
+    }
+
+    public void setContact(Contact contact) {
+        this.contact = contact;
     }
 
     public Merchant addActivity(Activity activity) {

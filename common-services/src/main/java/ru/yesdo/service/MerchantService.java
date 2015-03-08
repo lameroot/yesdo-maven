@@ -51,6 +51,13 @@ public class MerchantService {
         if ( null != merchantRepository.findByName(merchantData.getName()) ) throw new AlreadyExistException(merchantData.getName());
         Merchant merchant = new Merchant(merchantData.getName());
         merchant.setTitle(merchantData.getTitle());
+        if ( null != merchantData.getContactData() ) {
+            Contact contact = merchantData.getContactData().toContact();
+            contact.setType(Contact.ContactType.MERCHANT_CONTACT);
+            //neo4jTemplate.save(contact);
+            merchant.setContact(contact);
+        }
+
         for (Activity activity : merchantData.getActivities()) {
             if ( null == (activity = activityRepository.findByName(activity.getName())) )  throw new IllegalArgumentException("Activity with name: " + activity.getName() + " not found in db");
             if ( merchantData.isPartial() && null == activityGraphRepository.findByName(activity.getName()) )

@@ -15,6 +15,8 @@ public class ContactParam {
     public final static String ADDRESS_PARAM = "address";
     public final static String CITY_PARAM = "city";
     public final static String UNDERGROUND_PARAM = "underground";
+    public final static String PRICE_MIN_PARAM = "price_min";
+    public final static String PRICE_MAX_PARAM = "price_max";
 
     public enum Type {
         GEO,

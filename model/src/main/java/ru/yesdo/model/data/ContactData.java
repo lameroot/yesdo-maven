@@ -15,6 +15,7 @@ public class ContactData {
 
     private Set<ContactParam> contactParams = new HashSet<>();
     private double lon, lat;
+    private Contact.ContactType type;
 
     public ContactData addContactParam(ContactParam... contactParams) {
         for (ContactParam contactParam : contactParams) {
@@ -41,6 +42,14 @@ public class ContactData {
         return lat;
     }
 
+    public Contact.ContactType getType() {
+        return type;
+    }
+
+    public void setType(Contact.ContactType type) {
+        this.type = type;
+    }
+
     public Contact toContact() {
         Contact contact = new Contact();
         contact.setLocation(getLon(),getLat());
@@ -52,6 +61,7 @@ public class ContactData {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        contact.setType(getType());
         return contact;
     }
 }

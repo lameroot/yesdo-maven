@@ -53,7 +53,7 @@ public class MerchantServiceTest extends GeneralCommonServiceTest {
     @Test
     @Transactional
     @Rollback(false)
-    public void testConcludeOffer() {
+    public void testConcludeOffer() throws Exception {
         createWeekDays();
         createActivities();
         createMerchants();
@@ -75,6 +75,10 @@ public class MerchantServiceTest extends GeneralCommonServiceTest {
         neo4jTemplate.fetch(offers);
         assertEquals(1, offers.stream().filter(f -> f.getProduct().getTitle().equals("p21")).count());
         assertEquals(1, offers.stream().filter(f -> f.getProduct().getTitle().equals("p22")).count());
+        Contact contact = m21Found.getContact();
+        assertNotNull(contact);
+        neo4jTemplate.fetch(contact);
+        assertTrue(contact.getContactParam("test").getValue().equals("this is test"));
     }
 
     //http://www.lyonwj.com/mapping-the-worlds-airports-with-neo4j-spatial-and-openflights-part-1/

@@ -10,6 +10,8 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.yesdo.exception.AlreadyExistException;
 import ru.yesdo.model.*;
 import ru.yesdo.model.data.*;
 import ru.yesdo.service.GeoDataImporter;
@@ -113,7 +115,6 @@ public class AfishaGrabber extends AbstractGrabber {
 
         ContactData contactData = new ContactData();
         String address = documentCinema.select("div").select(".m-margin-btm").text();
-        System.out.println("address = " + address);
         if ( null != address ) {
             String[] arrayOfPrices = StringUtils.substringsBetween(address, "Билеты", "р")[0].trim().split("–");
             long startPrice = Long.parseLong(arrayOfPrices[0]) * 100;
@@ -121,6 +122,9 @@ public class AfishaGrabber extends AbstractGrabber {
 
             cinema.startPrice = startPrice;
             cinema.finishPrice = finishPrice;
+
+            contactData.addContactParam(new ContactParam(ContactParam.PRICE_MIN_PARAM, startPrice, ContactParam.Type.DESCRIPTION));
+            contactData.addContactParam(new ContactParam(ContactParam.PRICE_MAX_PARAM, finishPrice, ContactParam.Type.DESCRIPTION));
         }
 
         contactData.addContactParam(new ContactParam(ContactParam.ADDRESS_PARAM, address, ContactParam.Type.ADDRESS));
@@ -130,6 +134,8 @@ public class AfishaGrabber extends AbstractGrabber {
         double latitude = Double.parseDouble(documentMapCinema.select("meta[property=og:latitude]").attr("content"));
         double longitude = Double.parseDouble(documentMapCinema.select("meta[property=og:longitude]").attr("content"));
         contactData.setLocation(longitude,latitude);
+
+        cinema.setContactData(contactData);
 
         return cinema;
     }
@@ -193,6 +199,8 @@ public class AfishaGrabber extends AbstractGrabber {
         return afishaMerchantData;
     }
 
+
+
     private Set<OfferData> createOfferData(Movie movie, Element element, Calendar date) throws ParseException {
         Set<OfferData> offerDatas = new HashSet<>();
 
@@ -254,7 +262,7 @@ public class AfishaGrabber extends AbstractGrabber {
 
         Movie movie = new Movie();
         movie.setTitle(title);
-        movie.setCode(UUID.randomUUID().toString());
+        movie.setCode(Movie.getId(movieUrl));
         movie.setEnabled(true);
         movie.setPartial(true);
         movie.setCreatedAt(new Date());
@@ -332,11 +340,14 @@ public class AfishaGrabber extends AbstractGrabber {
     private static final String AFISHA_PAGE_PARAM = "afisha_page_param";
 
     @Override
-    public void grabActivities() {
+    public Set<Activity> grabActivities() {
+        Set<Activity> activities = new HashSet<>();
+
         ActivityData entertainmentData = new ActivityData("entertainment");
         entertainmentData.setTitle("Равзлечения");
         Activity entertainment = activityService.create(entertainmentData);
         if ( null == entertainment ) throw new IllegalArgumentException("Unable to create activity: entertainment");
+        activities.add(entertainment);
 
         ActivityData cinemaData = new ActivityData("cinema");
         cinemaData.setTitle("Кино");
@@ -344,6 +355,7 @@ public class AfishaGrabber extends AbstractGrabber {
         //cinemaData.addParam(AFISHA_URL_PARAM,"http://www.afisha.ru/msk/cinema/");
         Activity cinema = activityService.create(cinemaData);
         if ( null == cinema ) throw new IllegalArgumentException("Unable to create activity: cinema");
+        activities.add(cinema);
 
         ActivityData cinemasData = new ActivityData("cinemas");
         cinemasData.setTitle("Кинотеатры");
@@ -352,11 +364,15 @@ public class AfishaGrabber extends AbstractGrabber {
         cinemasData.addParam(AFISHA_PAGE_PARAM, "page%d");
         Activity cinemas = activityService.create(cinemasData);
         if ( null == cinemas ) throw new IllegalArgumentException("Unable to create activity: cinemas");
+        activities.add(cinemas);
+
+        return activities;
 
     }
 
     @Override
-    public void grabMerchants(Integer count) throws Exception {
+    public Set<Merchant> grabMerchants(Integer count) throws Exception {
+        Set<Merchant> merchants = new HashSet<>();
         Page<Activity> page = activityService.findAll(new PageRequest(0, 100));
         for (Activity activity : page) {
             String url = null;
@@ -392,16 +408,78 @@ public class AfishaGrabber extends AbstractGrabber {
             System.out.println("count cinemas = " + cinemas.size());
             for (Cinema cinema : cinemas) {
                 cinema.addActivity(activity);
+                ContactData contactData = cinema.getContactData();
+                contactData.addContactParam(new ContactParam(AFISHA_URL_PARAM,cinema.scheduleUrl, ContactParam.Type.ADDRESS));
+                contactData.addContactParam(new ContactParam(ContactParam.PRICE_MIN_PARAM,cinema.startPrice, ContactParam.Type.DESCRIPTION));
+                contactData.addContactParam(new ContactParam(ContactParam.PRICE_MAX_PARAM,cinema.finishPrice, ContactParam.Type.DESCRIPTION));
+
                 Merchant merchant = merchantService.create(cinema);
                 if ( null == merchant ) throw new IllegalArgumentException("Unable to create merchant: " + cinema);
+                merchants.add(merchant);
             }
         }
+        return merchants;
     }
 
     @Override
+    @Transactional
     public void grabProductAndOffers(boolean onlyProduct) throws Exception {
-        for (Merchant merchant : merchantGraphRepository.findAll()) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+        for (Merchant merchant : merchantGraphRepository.findAll(new PageRequest(0, 100))) {
+            if ( null == merchant.getContact() ) continue;
+            neo4jTemplate.fetch(merchant.getContact());
+            if ( null != merchant.getContact().getContactParam(AFISHA_URL_PARAM) ) {
+                String scheduleUrl = (String)merchant.getContact().getContactParam(AFISHA_URL_PARAM).getValue();
+                long startPrice = 0L;
+                if ( null != merchant.getContact().getContactParam(ContactParam.PRICE_MIN_PARAM) )
+                    startPrice = (Integer)merchant.getContact().getContactParam(ContactParam.PRICE_MAX_PARAM).getValue();
+                long finishPrice = 10000L;
+                if ( null != merchant.getContact().getContactParam(ContactParam.PRICE_MAX_PARAM))
+                    finishPrice = (Integer)merchant.getContact().getContactParam(ContactParam.PRICE_MAX_PARAM).getValue();
 
+                Elements elements = null;
+                Calendar current = Calendar.getInstance();
+
+                Set<Product> products = new HashSet<>();
+                do {
+                    String timeUrl = scheduleUrl + dateFormat.format(current.getTime()) + "/";
+                    System.out.println("timeUrl : " + timeUrl);
+
+                    Document documentSchedule = Jsoup.connect(timeUrl).get();
+                    elements = documentSchedule.select("div").select(".object").select("tr");
+
+                    Set<Product> productsOnTime = new HashSet<>();
+                    for (Element element : elements) {
+                        String movieUrl = element.select("div").select(".clearfix").select("a").attr("href");
+                        Movie movie = getMovie(movieUrl);
+                        movie.setMerchant(merchant);
+                        try {
+                            Product product = productService.getOrCreate(movie);
+                            if (null == product) throw new IllegalArgumentException("Unable to create product");
+
+                            if (!onlyProduct) {
+                                movie.intervalPrices = new LongRange(startPrice, finishPrice);
+                                Set<OfferData> offerDatas = createOfferData(movie, element, current);
+                                for (OfferData offerData : offerDatas) {
+                                    Offer offer = merchantService.concludeOffer(merchant, product, offerData);
+                                    if (null == offer) throw new IllegalArgumentException("Unable to create offer");
+                                }
+                            }
+                            productsOnTime.add(product);
+                        } catch (AlreadyExistException e) {
+                            continue;
+                        }
+
+                    }
+                    System.out.println("On " + current.getTime() + " we have : " + productsOnTime.size() + " products");
+                    products.addAll(productsOnTime);
+
+                    current.add(Calendar.DAY_OF_WEEK,1);
+                } while (0 < elements.size());
+
+                System.out.println("For merchant: " + merchant + " we have " + products.size() + " products");
+
+            }
         }
     }
 }

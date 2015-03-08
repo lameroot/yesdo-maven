@@ -1,6 +1,7 @@
 package ru.yesdo.service.grabber;
 
 import org.junit.Test;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yesdo.AbstractCommonServiceTest;
 import ru.yesdo.GeneralCommonServiceTest;
 import ru.yesdo.service.grabber.afisha.AfishaGrabber;
@@ -24,6 +25,8 @@ public class AfishaGrabberTest extends GeneralCommonServiceTest {
         long countInGraph = activityGraphRepository.count();
         System.out.println("count in db: " + countInDb);
         System.out.println("count in graph: " + countInGraph);
+
+        activityGraphRepository.findByName("cinema");
     }
 
     @Test
@@ -35,7 +38,18 @@ public class AfishaGrabberTest extends GeneralCommonServiceTest {
         long countInGraph = merchantGraphRepository.count();
         System.out.println("count in db: " + countInDb);
         System.out.println("count in graph: " + countInGraph);
+    }
 
+    @Test
+    public void testGrabProductsAndOffers() throws Exception {
+        afishaGrabber.grabActivities();
+        afishaGrabber.grabMerchants(1);
 
+        long countInDb = merchantRepository.count();
+        long countInGraph = merchantGraphRepository.count();
+        System.out.println("count in db: " + countInDb);
+        System.out.println("count in graph: " + countInGraph);
+
+        afishaGrabber.grabProductAndOffers(true);
     }
 }

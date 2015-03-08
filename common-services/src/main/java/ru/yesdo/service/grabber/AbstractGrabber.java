@@ -5,6 +5,7 @@ import ru.yesdo.graph.repository.ActivityGraphRepository;
 import ru.yesdo.graph.repository.MerchantGraphRepository;
 import ru.yesdo.service.ActivityService;
 import ru.yesdo.service.MerchantService;
+import ru.yesdo.service.ProductService;
 
 import javax.annotation.Resource;
 
@@ -23,4 +24,6 @@ public abstract class AbstractGrabber implements Grabber {
     protected MerchantService merchantService;
     @Resource
     protected MerchantGraphRepository merchantGraphRepository;
+    @Resource
+    protected ProductService productService;
 }

@@ -24,6 +24,14 @@ class Movie extends ProductData {
     Integer duration;
     LongRange intervalPrices;
 
+    static String getId(String url) {
+        return "AFISHA_MOVIE_" + url.substring(url.lastIndexOf("movie/")+6,url.length()-2);
+    }
+
+    public static void main(String[] args) {
+        Movie m = new Movie();
+        System.out.println(m.getId("http://www.afisha.ru/movie/218399/"));
+    }
 
 
     @Override

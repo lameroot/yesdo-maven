@@ -44,7 +44,7 @@ public class Contact {
     private String wkt;
 
     @Type(type = "ru.yesdo.model.DynamicPropertiesType")
-    @Column(name = "params")
+    @Column(name = "params", columnDefinition = "TEXT")
     private DynamicProperties params = new DynamicPropertiesContainer();
 
     @GraphProperty(propertyName = "type")
