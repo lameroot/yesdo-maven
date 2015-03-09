@@ -4,10 +4,13 @@ import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yesdo.AbstractCommonServiceTest;
 import ru.yesdo.GeneralCommonServiceTest;
+import ru.yesdo.model.Activity;
+import ru.yesdo.model.Product;
 import ru.yesdo.service.grabber.afisha.AfishaGrabber;
 
 
 import javax.annotation.Resource;
+import java.util.UUID;
 
 /**
  * Created by lameroot on 04.03.15.
@@ -42,6 +45,7 @@ public class AfishaGrabberTest extends GeneralCommonServiceTest {
 
     @Test
     public void testGrabProductsAndOffers() throws Exception {
+        createWeekDays();
         afishaGrabber.grabActivities();
         afishaGrabber.grabMerchants(1);
 
@@ -50,6 +54,7 @@ public class AfishaGrabberTest extends GeneralCommonServiceTest {
         System.out.println("count in db: " + countInDb);
         System.out.println("count in graph: " + countInGraph);
 
-        afishaGrabber.grabProductAndOffers(true);
+        afishaGrabber.grabProductAndOffers(false);
     }
+
 }

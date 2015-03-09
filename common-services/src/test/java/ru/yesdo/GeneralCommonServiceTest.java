@@ -6,6 +6,8 @@ import org.neo4j.graphdb.Transaction;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.neo4j.support.node.Neo4jHelper;
 import org.springframework.test.context.transaction.BeforeTransaction;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yesdo.model.*;
 import ru.yesdo.model.data.*;
 import ru.yesdo.service.*;
@@ -32,6 +34,15 @@ public class GeneralCommonServiceTest extends AbstractCommonServiceTest {
         }
     }};
 
+    public void initIndexesNodes() {
+        Activity activity = new Activity("fake");
+        activityGraphRepository.save(activity);
+        activityGraphRepository.delete(activity);
+        Product product = new Product("test");
+        productGraphRepository.save(product);
+        productGraphRepository.delete(product);
+    }
+
     @BeforeTransaction
     public void cleanGraphDb() {
         System.out.println("---- clean graph db");
@@ -40,6 +51,7 @@ public class GeneralCommonServiceTest extends AbstractCommonServiceTest {
 
     @Before
     public void initData() {
+        System.out.println("---- init graph data");
         Transaction transaction = graphDatabaseService.beginTx();
         try {
             Neo4jHelper.cleanDb(graphDatabaseService);
@@ -50,7 +62,7 @@ public class GeneralCommonServiceTest extends AbstractCommonServiceTest {
         } finally {
             transaction.close();
         }
-
+        initIndexesNodes();
 
         ActivityData a0 = createActivityData(Activity.ROOT_NAME);
         ActivityData a11 = createActivityData("a11", Activity.ROOT_NAME);
@@ -221,10 +233,20 @@ public class GeneralCommonServiceTest extends AbstractCommonServiceTest {
         return userService.create(userData);
     }
 
-    protected void createWeekDays() {
-        for (WeekDay weekDay : weekDays) {
-            neo4jTemplate.save(weekDay);
+    public void createWeekDays() {
+        Transaction transaction = graphDatabaseService.beginTx();
+        try {
+            for (WeekDay weekDay : weekDays) {
+                neo4jTemplate.save(weekDay);
+            }
+            transaction.success();
+        } catch (Exception e) {
+            transaction.failure();
+            e.printStackTrace();
+        } finally {
+            transaction.close();
         }
+
     }
 
 

@@ -66,6 +66,11 @@ public class Product {
     private Contact contact;
 
 
+    public Product(){}
+    public Product(String code){
+        this.code = code;
+    }
+
     public Long getId() {
         return id;
     }
