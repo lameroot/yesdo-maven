@@ -1,5 +1,6 @@
 package ru.yesdo;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
@@ -8,10 +9,13 @@ import org.springframework.data.neo4j.support.node.Neo4jHelper;
 import org.springframework.test.context.transaction.BeforeTransaction;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.FileSystemUtils;
+import ru.yesdo.graph.GraphConfigTest;
 import ru.yesdo.model.*;
 import ru.yesdo.model.data.*;
 import ru.yesdo.service.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -49,12 +53,19 @@ public class GeneralCommonServiceTest extends AbstractCommonServiceTest {
         Neo4jHelper.cleanDb(graphDatabaseService);
     }
 
+
+    public static void main(String[] args) throws IOException {
+        FileUtils.cleanDirectory(new File(GraphConfigTest.neo4jHome + "/data/graph.db/"));
+    }
     @Before
     public void initData() {
         System.out.println("---- init graph data");
         Transaction transaction = graphDatabaseService.beginTx();
         try {
-            Neo4jHelper.cleanDb(graphDatabaseService);
+            //FileUtils.cleanDirectory(new File(GraphConfigTest.neo4jHome + "/data/graph.db/"));
+
+            neo4jTemplate.query("match (n)-[r:RTREE_REFERENCE]->() delete r",new HashMap<>());
+            Neo4jHelper.cleanDb(graphDatabaseService,true);
             transaction.success();
         } catch (Exception e) {
             transaction.failure();

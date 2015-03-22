@@ -199,8 +199,6 @@ public class AfishaGrabber extends AbstractGrabber {
         return afishaMerchantData;
     }
 
-
-
     private Set<OfferData> createOfferData(Movie movie, Element element, Calendar date) throws ParseException {
         Set<OfferData> offerDatas = new HashSet<>();
 
@@ -229,12 +227,19 @@ public class AfishaGrabber extends AbstractGrabber {
                 else amount = max;
             }
 
-            OfferTimeData offerTimeData = new OfferTimeData();
             cal.add(Calendar.MINUTE,movie.duration);
-            offerTimeData.start(dateInside);
-            offerTimeData.finish(cal.getTime());
 
-            offerData.addOfferTime(days, offerTimeData);
+            TimeCost timeCost = TimeCost.duringOneDay(date,
+                    TimeCost.createTime(dateInside.getHours(),dateInside.getMinutes()),
+                    TimeCost.createTime(cal.get(Calendar.HOUR_OF_DAY),cal.get(Calendar.MINUTE)),
+                    amount);
+            offerData.addTimeCost(timeCost);
+
+//            OfferTimeData offerTimeData = new OfferTimeData();
+//            offerTimeData.start(dateInside);
+//            offerTimeData.finish(cal.getTime());
+//
+//            offerData.addOfferTime(days, offerTimeData);
 
             offerData.setContactData(movie.getContactData());
             offerData.setProductType(ProductType.CINEMA);

@@ -41,7 +41,9 @@ public class SpatialOperationTest extends GeneralCommonServiceTest {
         EditableLayer layer = spatialDatabaseService.getOrCreateEditableLayer("geom");
         Coordinate[] coordinates = new Coordinate[] { new Coordinate(0, 0,0), new Coordinate(0, 1,3) };
         Geometry geometry = layer.getGeometryFactory().createLineString(coordinates);
-        layer.add(geometry);
+        SpatialDatabaseRecord spatialDatabaseRecord = layer.add(geometry);
+
+        //spatialDatabaseRecord.getGeomNode().createRelationshipTo()
         debugLRS(geometry);
 
         /*

@@ -50,9 +50,9 @@ public class Offer {
     @Enumerated(EnumType.STRING)
     private Publicity publicity;//публичность данного продукта, он может быть скрытый, может быть приватный, публичный, только для избранных
 
-    @GraphProperty
-    @Transient
-    private TimeProduct timeProduct;//время в которое можно воспользоваться услугой
+//    @GraphProperty
+//    @Transient
+//    private TimeProduct timeProduct;//время в которое можно воспользоваться услугой
 
     @Transient
     @RelatedToVia(direction = Direction.INCOMING, elementClass = OfferTime.class)
@@ -131,13 +131,13 @@ public class Offer {
         this.publicity = publicity;
     }
 
-    public TimeProduct getTimeProduct() {
-        return timeProduct;
-    }
-
-    public void setTimeProduct(TimeProduct timeProduct) {
-        this.timeProduct = timeProduct;
-    }
+//    public TimeProduct getTimeProduct() {
+//        return timeProduct;
+//    }
+//
+//    public void setTimeProduct(TimeProduct timeProduct) {
+//        this.timeProduct = timeProduct;
+//    }
 
     public ProductType getProductType() {
         return productType;

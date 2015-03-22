@@ -81,6 +81,8 @@ public class AbstractCommonServiceTest extends TestCase {
     protected WeekDayGraphRepository weekDayGraphRepository;
     @Resource
     protected ContactGraphRepository contactGraphRepository;
+    @Resource
+    protected TimeCostService timeCostService;
 
     @Test
     public void testExist() {

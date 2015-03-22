@@ -13,6 +13,7 @@ import ru.yesdo.model.data.MerchantData;
 import ru.yesdo.model.data.OfferData;
 import ru.yesdo.model.data.OfferTimeData;
 
+import java.util.Calendar;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -86,39 +87,59 @@ public class MerchantServiceTest extends GeneralCommonServiceTest {
     @Transactional
     @Rollback(false)
     public void testCreateOneOffer() {
-        createWeekDays();
+        //createWeekDays();
 
         Activity activity = new Activity();
         activity.setName("activity_one");
         activityGraphRepository.save(activity);
         assertNotNull(activity.getGraphId());
 
-        Merchant merchant = new Merchant();
-        merchant.setName("merchant_one");
-        merchant.setTitle("merchant_one");
-        merchant.addActivity(activity);
-        merchantGraphRepository.save(merchant);
-        assertNotNull(merchant.getGraphId());
+        for (int g = 0; g < 2; g++) {
 
-        Product product = new Product();
-        product.setCode(UUID.randomUUID().toString());
-        product.setTitle("product_one");
-        product.setMerchant(merchant);
-        productGraphRepository.save(product);
-        assertNotNull(product.getGraphId());
+            Merchant merchant = new Merchant();
+            merchant.setName("merchant_one_" + g);
+            merchant.setTitle("merchant_one_" + g);
+            merchant.addActivity(activity);
+            merchantGraphRepository.save(merchant);
+            assertNotNull(merchant.getGraphId());
 
-        OfferData offerData =
-            new OfferData().setAmount(10L).setPublicity(Publicity.PUBLIC).setProductType(ProductType.SERVICE).setContactData(
-                new ContactData().setLocation(10.0, 20.0));
-        offerData.addOfferTimes(WeekDay.Days.FRIDAY, new OfferTimeData().start(1000).finish(2000), new OfferTimeData().interval(1200, 1400))
-                .addOfferTimes(WeekDay.Days.MONDAY, new OfferTimeData().interval(1200, 1400));
+            for (int i = 0; i < 2; i++) {
+                Product product = new Product();
+                product.setCode(UUID.randomUUID().toString());
+                product.setTitle("product_one_" + i);
+                product.setMerchant(merchant);
+                productGraphRepository.save(product);
+                assertNotNull(product.getGraphId());
 
+                for (int j = 0; j < 2; j++) {
 
-        Offer offer = offerData.toOffer();
-        offer.setMerchant(merchant);
-        offer.setProduct(product);
+                    OfferData offerData =
+                            new OfferData().setAmount(10L).setPublicity(Publicity.PUBLIC).setProductType(ProductType.SERVICE).setContactData(
+                                    new ContactData().setLocation(10.0, 20.0).addContactParam(new ContactParam("name", "stas", ContactParam.Type.PROFILE)));
+                    offerData.addOfferTimes(WeekDay.Days.FRIDAY, new OfferTimeData().start(1000).finish(2000), new OfferTimeData().interval(1200, 1400))
+                            .addOfferTimes(WeekDay.Days.MONDAY, new OfferTimeData().interval(1200, 1400));
 
-        offerGraphRepository.save(offer);
+                    TimeCost timeCost1 = TimeCost.duringOneDay(Calendar.getInstance(), TimeCost.createTime(10, 0), TimeCost.createTime(22, 0), 300L);
+                    TimeCost timeCost2 = TimeCost.duringOneDay(Calendar.getInstance(), TimeCost.createTime(12, 0), null, 350L);
+                    Calendar tomorrow = Calendar.getInstance();
+                    tomorrow.add(Calendar.DAY_OF_MONTH, 2);
+                    TimeCost timeCost3 = TimeCost.duringSeveralDays(Calendar.getInstance(), tomorrow, TimeCost.createTime(10, 0), TimeCost.createTime(22, 0), 300L);
+                    TimeCost timeCost4 = TimeCost.duringOneSpecialDay(TimeCost.SpecialDay.MONDAY, TimeCost.createTime(10, 0), TimeCost.createTime(22, 0), 400L);
+
+                    offerData.addTimeCost(timeCost1).addTimeCost(timeCost2).addTimeCost(timeCost3).addTimeCost(timeCost4);
+
+                    Offer offer = offerData.toOffer();
+                    offer.setMerchant(merchant);
+                    offer.setProduct(product);
+
+                    offerGraphRepository.save(offer);
+                    if (null != offerData.getTimeCosts() && !offerData.getTimeCosts().isEmpty()) {
+                        for (TimeCost timeCost : offerData.getTimeCosts()) {
+                            timeCostService.addTimeCost(offer, timeCost);
+                        }
+                    }
+        /*
+
         if ( null != offerData.getOfferTimes() && !offerData.getOfferTimes().isEmpty() ) {
             offer.setOfferWorkTime(JsonUtil.toSafeJson(offerData.getOfferTimes()));
             for (Map.Entry<WeekDay.Days, Set<OfferTimeData>> entry : offerData.getOfferTimes().entrySet()) {
@@ -134,10 +155,14 @@ public class MerchantServiceTest extends GeneralCommonServiceTest {
                 }
             }
         }
-        assertNotNull(offer.getGraphId());
+        */
+                    assertNotNull(offer.getGraphId());
 
-        Result<Contact> contacts = contactGraphRepository.findWithinShape(Contact.LOCATION_INDEX_NAME, new Polygon(new Point(10.0, 20.0), new Point(20.0, 30), new Point(30.0, 40.0)));
-        assertNotNull(contacts);
+                    Result<Contact> contacts = contactGraphRepository.findWithinShape(Contact.LOCATION_INDEX_NAME, new Polygon(new Point(10.0, 20.0), new Point(20.0, 30), new Point(30.0, 40.0)));
+                    assertNotNull(contacts);
 
+                }
+            }
+        }
     }
 }

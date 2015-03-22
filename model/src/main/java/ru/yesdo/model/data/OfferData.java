@@ -18,6 +18,7 @@ public class OfferData {
     private ContactData contactData;
     private boolean partial = true;
     private Map<WeekDay.Days,Set<OfferTimeData>> offerTimes;
+    private List<TimeCost> timeCosts = new ArrayList<>();
 
 
 
@@ -28,7 +29,7 @@ public class OfferData {
         offer.setExpirationAt(getExpirationAt());
         offer.setProductType(getProductType());
         offer.setPublicity(getPublicity());
-        offer.setTimeProduct(getTimeProduct());
+
 
         if ( null != getContactData() ) {
             Contact contact = getContactData().toContact();
@@ -65,14 +66,7 @@ public class OfferData {
         return this;
     }
 
-    public TimeProduct getTimeProduct() {
-        return timeProduct;
-    }
 
-    public OfferData setTimeProduct(TimeProduct timeProduct) {
-        this.timeProduct = timeProduct;
-        return this;
-    }
 
     public ProductType getProductType() {
         return productType;
@@ -132,6 +126,19 @@ public class OfferData {
         offerTimeDatas.add(offerTimeData);
         this.offerTimes.put(weekDay,offerTimeDatas);
         return this;
+    }
+
+    public OfferData addTimeCost(TimeCost timeCost) {
+        this.timeCosts.add(timeCost);
+        return this;
+    }
+
+    public List<TimeCost> getTimeCosts() {
+        return timeCosts;
+    }
+
+    public void setTimeCosts(List<TimeCost> timeCosts) {
+        this.timeCosts = timeCosts;
     }
 
     @Override

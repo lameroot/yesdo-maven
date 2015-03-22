@@ -45,6 +45,8 @@ public class MerchantService {
     private Neo4jTemplate neo4jTemplate;
     @Resource
     private WeekDayGraphRepository weekDayGraphRepository;
+    @Resource
+    private TimeCostService timeCostService;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Merchant create(MerchantData merchantData) {
@@ -90,6 +92,13 @@ public class MerchantService {
         offerRepository.save(offer);
         if ( offerData.isPartial() ) {
             offerGraphRepository.save(offer);
+            if ( null != offerData.getTimeCosts() && !offerData.getTimeCosts().isEmpty() ) {
+                for (TimeCost timeCost : offerData.getTimeCosts()) {
+                    //timeCostService.addTimeCost(offer,timeCost);
+                }
+            }
+
+            /*
             if ( null != offerData.getOfferTimes() && !offerData.getOfferTimes().isEmpty() ) {
                 offer.setOfferWorkTime(JsonUtil.toSafeJson(offerData.getOfferTimes()));
                 for (Map.Entry<WeekDay.Days, Set<OfferTimeData>> entry : offerData.getOfferTimes().entrySet()) {
@@ -105,6 +114,7 @@ public class MerchantService {
                     }
                 }
             }
+            */
         }
 
         return offer;
