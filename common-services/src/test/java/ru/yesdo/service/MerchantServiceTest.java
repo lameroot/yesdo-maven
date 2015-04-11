@@ -1,6 +1,7 @@
 package ru.yesdo.service;
 
 import org.junit.Test;
+import org.neo4j.graphdb.Relationship;
 import org.springframework.data.geo.Point;
 import org.springframework.data.geo.Polygon;
 import org.springframework.data.neo4j.conversion.Result;
@@ -8,10 +9,7 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yesdo.GeneralCommonServiceTest;
 import ru.yesdo.model.*;
-import ru.yesdo.model.data.ContactData;
-import ru.yesdo.model.data.MerchantData;
-import ru.yesdo.model.data.OfferData;
-import ru.yesdo.model.data.OfferTimeData;
+import ru.yesdo.model.data.*;
 
 import java.util.Calendar;
 import java.util.Map;
@@ -164,5 +162,93 @@ public class MerchantServiceTest extends GeneralCommonServiceTest {
                 }
             }
         }
+
+
+    }
+
+    @Test
+    @Transactional
+    @Rollback(false)
+    public void testCreateRealExample() {
+
+        Activity activity = new Activity();
+        activity.setName("activity_one");
+        activityGraphRepository.save(activity);
+        assertNotNull(activity.getGraphId());
+
+        Merchant merchant1 = new Merchant();
+        merchant1.setName("Cinema 1");
+        merchant1.setTitle("My cinema 1");
+        merchant1.addActivity(activity);
+        merchantGraphRepository.save(merchant1);
+        assertNotNull(merchant1.getGraphId());
+
+        Product productm1p1 = new Product();
+        productm1p1.setCode(UUID.randomUUID().toString());
+        productm1p1.setTitle("Film 1");
+        productm1p1.setMerchant(merchant1);
+        productGraphRepository.save(productm1p1);
+        assertNotNull(productm1p1.getGraphId());
+
+        OfferData offerDatam1p1od1 = new OfferData();
+        Calendar start1 = Calendar.getInstance();
+        Calendar finish1 = Calendar.getInstance();
+        finish1.add(Calendar.DAY_OF_MONTH,15);
+        TimeCost timeCost1 = TimeCost.duringSeveralDays(start1,finish1,TimeCost.createTime(10,0),TimeCost.createTime(12,0),100L);
+        TimeCost timeCost2 = TimeCost.duringSeveralDays(start1,finish1,TimeCost.createTime(12,0),TimeCost.createTime(14,0),200L);
+        TimeCost timeCost3 = TimeCost.duringSeveralDays(start1,finish1,TimeCost.createTime(15,0),TimeCost.createTime(17,0),200L);
+        TimeCost timeCost4 = TimeCost.duringSeveralDays(start1,finish1,TimeCost.createTime(18,0),TimeCost.createTime(20,0),300L);
+        TimeCost timeCost5 = TimeCost.duringSeveralDays(start1,finish1,TimeCost.createTime(21,0),TimeCost.createTime(23,0),300L);
+
+        offerDatam1p1od1.addTimeCost(timeCost1).addTimeCost(timeCost2).addTimeCost(timeCost3).addTimeCost(timeCost4).addTimeCost(timeCost5);
+
+        Offer offer1 = offerDatam1p1od1.toOffer();
+        offer1.setMerchant(merchant1);
+        offer1.setProduct(productm1p1);
+        offerGraphRepository.save(offer1);
+
+        for (TimeCost timeCost : offerDatam1p1od1.getTimeCosts()) {
+            Relationship r = timeCostService.addTimeCost(offer1, timeCost);
+            System.out.println("r id = " + r.getId());
+        }
+
+        //
+        Product productm1p2 = new Product();
+        productm1p2.setCode(UUID.randomUUID().toString());
+        productm1p2.setTitle("Film 2");
+        productm1p2.setMerchant(merchant1);
+        productGraphRepository.save(productm1p2);
+        assertNotNull(productm1p2.getGraphId());
+
+        OfferData offerDatam1p2od2 = new OfferData();
+        Calendar start11 = Calendar.getInstance();
+        Calendar finish11 = Calendar.getInstance();
+        finish11.add(Calendar.DAY_OF_MONTH,10);
+        TimeCost timeCost11 = TimeCost.duringSeveralDays(start11,finish11,TimeCost.createTime(10,0),TimeCost.createTime(12,0),200L);
+        TimeCost timeCost21 = TimeCost.duringSeveralDays(start11,finish11,TimeCost.createTime(12,0),TimeCost.createTime(14,0),200L);
+        TimeCost timeCost31 = TimeCost.duringSeveralDays(start11,finish11,TimeCost.createTime(15,0),TimeCost.createTime(17,0),300L);
+        TimeCost timeCost41 = TimeCost.duringSeveralDays(start11,finish11,TimeCost.createTime(18,0),TimeCost.createTime(20,0),400L);
+        TimeCost timeCost51 = TimeCost.duringSeveralDays(start11,finish11,TimeCost.createTime(21,0),TimeCost.createTime(23,0),400L);
+        TimeCost timeCost61 = TimeCost.duringSeveralDays(start11,finish11,TimeCost.createTime(23,0),TimeCost.createTime(2,0),400L);
+
+        offerDatam1p2od2.addTimeCost(timeCost11).addTimeCost(timeCost21).addTimeCost(timeCost31).addTimeCost(timeCost41).addTimeCost(timeCost51).addTimeCost(timeCost61);
+
+        Offer offer2 = offerDatam1p1od1.toOffer();
+        offer2.setMerchant(merchant1);
+        offer2.setProduct(productm1p2);
+        //offerGraphRepository.save(offer2);
+
+        for (TimeCost timeCost : offerDatam1p2od2.getTimeCosts()) {
+            //Relationship r = timeCostService.addTimeCost(offer2, timeCost);
+            //System.out.println("r id = " + r.getId());
+        }
+
+        Calendar searchStart = Calendar.getInstance();
+        searchStart.add(Calendar.DAY_OF_MONTH,2);
+        Calendar searchEnd = Calendar.getInstance();
+        searchEnd.add(Calendar.DAY_OF_MONTH, 6);
+
+
+        timeCostService.findBy(searchStart,searchEnd,12.15,17.59,200L,null);
     }
 }

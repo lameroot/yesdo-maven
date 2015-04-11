@@ -141,6 +141,16 @@ public class TimeCost {
         return geometryFactory.createPolygon(coordinates);
     }
 
+    public static Geometry createBox(GeometryFactory geometryFactory, Calendar startDay, Calendar finishDay, Double startTime, Double finishTime) {
+        Double sd = toDay(startDay);
+        Double fd = toDay(finishDay);
+        Coordinate leftLow = new Coordinate(sd,startTime);
+        Coordinate rightLow = new Coordinate(fd,startTime);
+        Coordinate leftHigh = new Coordinate(sd, finishTime);
+        Coordinate rightHigh = new Coordinate(fd, finishTime);
+        return geometryFactory.createPolygon(new Coordinate[]{leftLow,leftHigh,rightHigh,rightLow,leftLow});
+    }
+
     public HashMap getParamsOfRelationship() {
         return params;
     }

@@ -6,10 +6,13 @@ import org.neo4j.gis.spatial.EditableLayer;
 import org.neo4j.gis.spatial.SpatialDatabaseRecord;
 import org.neo4j.gis.spatial.SpatialDatabaseService;
 
+import org.neo4j.gis.spatial.pipes.GeoPipeline;
+import org.neo4j.gis.spatial.rtree.filter.SearchFilter;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.neo4j.conversion.Result;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -19,7 +22,10 @@ import ru.yesdo.model.Offer;
 import ru.yesdo.model.TimeCost;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by lameroot on 18.03.15.
@@ -45,11 +51,67 @@ public class TimeCostService {
 
         Geometry geometry = timeCost.toGeometry(timeCostLayer.getGeometryFactory());
         logger.debug("Will try to add geometry: {} to spatial layer: {}",geometry,TimeCost.SPATIAL_LAYER_NAME);
-
+        System.out.println("geom =" + geometry);
         SpatialDatabaseRecord spatialDatabaseRecord = timeCostLayer.add(geometry);
+        spatialDatabaseRecord.setProperty(TimeCost.TIME_COST_RELATIONSHIP_COST_PARAM_NAME,timeCost.getParamsOfRelationship().get(TimeCost.TIME_COST_RELATIONSHIP_COST_PARAM_NAME));
         Node geomNode = spatialDatabaseRecord.getGeomNode();
         return neo4jTemplate.createRelationshipBetween(offerNode,geomNode,TimeCost.TIME_COST_RELATIONSHIP_NAME,timeCost.getParamsOfRelationship());
 
+    }
+
+    public List<TimeCost> findBy(Calendar startDay, Calendar endDay, Double startTime, Double endTime, Long startCost, Long endCost) {
+        EditableLayer timeCostLayer = spatialDatabaseService.getOrCreateEditableLayer(TimeCost.SPATIAL_LAYER_NAME);
+        if ( null == timeCostLayer ) throw new IllegalArgumentException("Unable to create timecost layer");
+
+        Geometry searchBox = TimeCost.createBox(timeCostLayer.getGeometryFactory(),startDay,endDay,startTime,endTime);
+        System.out.println("search box = " + searchBox);
+
+        Coordinate coordinate = new Coordinate(TimeCost.toDay(startDay),startTime);
+        System.out.println("startContainSearch");
+        printRecords(GeoPipeline.startContainSearch(timeCostLayer, searchBox).toSpatialDatabaseRecordList());
+        System.out.println("startCoveredBySearch");
+        printRecords(GeoPipeline.startCoveredBySearch(timeCostLayer, searchBox).toSpatialDatabaseRecordList());
+        System.out.println("startCoverSearch");
+        printRecords(GeoPipeline.startCoverSearch(timeCostLayer, searchBox).toSpatialDatabaseRecordList());
+        System.out.println("startCrossSearch");
+        printRecords(GeoPipeline.startCrossSearch(timeCostLayer, searchBox).toSpatialDatabaseRecordList());
+        System.out.println("startIntersectSearch");
+        printRecords(GeoPipeline.startIntersectSearch(timeCostLayer, searchBox)
+                //.getMax(TimeCost.TIME_COST_RELATIONSHIP_COST_PARAM_NAME)
+                .propertyFilter(TimeCost.TIME_COST_RELATIONSHIP_COST_PARAM_NAME,startCost)//todo: почему то не работает с фильтром
+                //.range(startCost.intValue(), null != endCost ? endCost.intValue() : null)
+                .toSpatialDatabaseRecordList());
+        System.out.println("startOverlapSearch");
+        printRecords(GeoPipeline.startOverlapSearch(timeCostLayer, searchBox).toSpatialDatabaseRecordList());
+        System.out.println("startTouchSearch");
+        printRecords(GeoPipeline.startTouchSearch(timeCostLayer, searchBox).toSpatialDatabaseRecordList());
+        System.out.println("startWithinSearch");
+        printRecords(GeoPipeline.startWithinSearch(timeCostLayer, searchBox).toSpatialDatabaseRecordList());
+
+        List<Node> records= GeoPipeline.startContainSearch(timeCostLayer, searchBox).toNodeList();
+        //List<Node> records = GeoPipeline.startContainSearch(timeCostLayer, searchBox).toNodeList();
+        for (Node record : records) {
+            System.out.println(record);
+
+
+
+        }
+
+        return null;
+    }
+
+    private void printRecords(List<SpatialDatabaseRecord> records) {
+        for (SpatialDatabaseRecord record : records) {
+            System.out.println(record);
+            Result result = neo4jTemplate.query("match (n)<-[r:TIME_COST]-(o) where ID(n) = " + record.getGeomNode().getId() + " return o", new HashMap<>());
+            System.out.println(result.single());
+        }
+    }
+
+    public List<Offer> findOffers() {
+        List<Offer> offers = new ArrayList<>();
+
+        return offers;
     }
 
 
