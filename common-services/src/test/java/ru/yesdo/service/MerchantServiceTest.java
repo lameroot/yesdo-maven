@@ -1,5 +1,6 @@
 package ru.yesdo.service;
 
+import org.geotools.filter.text.cql2.CQLException;
 import org.junit.Test;
 import org.neo4j.graphdb.Relationship;
 import org.springframework.data.geo.Point;
@@ -249,6 +250,10 @@ public class MerchantServiceTest extends GeneralCommonServiceTest {
         searchEnd.add(Calendar.DAY_OF_MONTH, 6);
 
 
-        timeCostService.findBy(searchStart,searchEnd,12.15,17.59,200L,null);
+        try {
+            timeCostService.findBy(searchStart, searchEnd, 12.15, 17.59, 100L, 200L);
+        } catch (CQLException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -2,11 +2,16 @@ package ru.yesdo.service;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import org.geotools.filter.text.cql2.CQLException;
 import org.neo4j.gis.spatial.EditableLayer;
 import org.neo4j.gis.spatial.SpatialDatabaseRecord;
 import org.neo4j.gis.spatial.SpatialDatabaseService;
 
+import org.neo4j.gis.spatial.pipes.AbstractFilterGeoPipe;
+import org.neo4j.gis.spatial.pipes.GeoPipeFlow;
 import org.neo4j.gis.spatial.pipes.GeoPipeline;
+import org.neo4j.gis.spatial.pipes.filtering.FilterProperty;
+import org.neo4j.gis.spatial.pipes.impl.FilterPipe;
 import org.neo4j.gis.spatial.rtree.filter.SearchFilter;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -55,11 +60,12 @@ public class TimeCostService {
         SpatialDatabaseRecord spatialDatabaseRecord = timeCostLayer.add(geometry);
         spatialDatabaseRecord.setProperty(TimeCost.TIME_COST_RELATIONSHIP_COST_PARAM_NAME,timeCost.getParamsOfRelationship().get(TimeCost.TIME_COST_RELATIONSHIP_COST_PARAM_NAME));
         Node geomNode = spatialDatabaseRecord.getGeomNode();
+        //geomNode.setProperty(TimeCost.TIME_COST_RELATIONSHIP_COST_PARAM_NAME,timeCost.getParamsOfRelationship().get(TimeCost.TIME_COST_RELATIONSHIP_COST_PARAM_NAME));
         return neo4jTemplate.createRelationshipBetween(offerNode,geomNode,TimeCost.TIME_COST_RELATIONSHIP_NAME,timeCost.getParamsOfRelationship());
 
     }
 
-    public List<TimeCost> findBy(Calendar startDay, Calendar endDay, Double startTime, Double endTime, Long startCost, Long endCost) {
+    public List<TimeCost> findBy(Calendar startDay, Calendar endDay, Double startTime, Double endTime, Long startCost, Long endCost) throws CQLException {
         EditableLayer timeCostLayer = spatialDatabaseService.getOrCreateEditableLayer(TimeCost.SPATIAL_LAYER_NAME);
         if ( null == timeCostLayer ) throw new IllegalArgumentException("Unable to create timecost layer");
 
@@ -76,11 +82,25 @@ public class TimeCostService {
         System.out.println("startCrossSearch");
         printRecords(GeoPipeline.startCrossSearch(timeCostLayer, searchBox).toSpatialDatabaseRecordList());
         System.out.println("startIntersectSearch");
-        printRecords(GeoPipeline.startIntersectSearch(timeCostLayer, searchBox)
-                //.getMax(TimeCost.TIME_COST_RELATIONSHIP_COST_PARAM_NAME)
-                .propertyFilter(TimeCost.TIME_COST_RELATIONSHIP_COST_PARAM_NAME,startCost)//todo: почему то не работает с фильтром
-                //.range(startCost.intValue(), null != endCost ? endCost.intValue() : null)
+        GeoPipeline pipe = GeoPipeline.startIntersectSearch(timeCostLayer, searchBox);
+//        List<GeoPipeFlow> geoPipeFlows =
+//                pipe.addPipe(new FilterRecordProperty(TimeCost.TIME_COST_RELATIONSHIP_COST_PARAM_NAME,startCost)).toList();
+
+        //todo: сделать более красиво тут всё
+        printRecords(pipe
+                .addPipe(new FilterRecordProperty(TimeCost.TIME_COST_RELATIONSHIP_COST_PARAM_NAME, startCost, FilterPipe.Filter.GREATER_THAN_EQUAL))
+                .addPipe(new FilterRecordProperty(TimeCost.TIME_COST_RELATIONSHIP_COST_PARAM_NAME, endCost, FilterPipe.Filter.LESS_THAN_EQUAL))
                 .toSpatialDatabaseRecordList());
+        /*
+        printRecords(GeoPipeline.startIntersectSearch(timeCostLayer, searchBox)
+                //.propertyNullFilter("cost")
+                //.cqlFilter("cost = '200'")
+                //.sort(TimeCost.TIME_COST_RELATIONSHIP_COST_PARAM_NAME + "222")
+                //.getMax(TimeCost.TIME_COST_RELATIONSHIP_COST_PARAM_NAME)
+                .propertyFilter(TimeCost.TIME_COST_RELATIONSHIP_COST_PARAM_NAME, startCost)//todo: почему то не работает с фильтром
+                        //.range(startCost.intValue(), null != endCost ? endCost.intValue() : null)
+                .toSpatialDatabaseRecordList());
+                */
         System.out.println("startOverlapSearch");
         printRecords(GeoPipeline.startOverlapSearch(timeCostLayer, searchBox).toSpatialDatabaseRecordList());
         System.out.println("startTouchSearch");
@@ -99,6 +119,64 @@ public class TimeCostService {
 
         return null;
     }
+
+    private static class FilterRecordProperty extends AbstractFilterGeoPipe {
+        private String key;
+        private Object value;
+        private FilterPipe.Filter comparison;
+
+        public FilterRecordProperty(String key, Object value) {
+            this(key, value, FilterPipe.Filter.EQUAL);
+        }
+
+        public FilterRecordProperty(String key, Object value, FilterPipe.Filter comparison) {
+            this.key = key;
+            this.value = value;
+            this.comparison = comparison;
+        }
+
+        @Override
+        protected boolean validate(GeoPipeFlow flow) {
+            Object prop = flow.getRecord().getProperty(key);
+            if ( null == prop ) return value == null;
+            switch (comparison) {
+                case EQUAL: {
+                    return prop.equals(value);
+                }
+                case NOT_EQUAL: {
+                    return !prop.equals(value);
+                }
+                case GREATER_THAN: {
+                    if ( null != value ) {
+                        return ((Comparable)prop).compareTo(value) == 1;
+                    }
+                    return false;
+                }
+                case LESS_THAN: {
+                    if ( null != value ) {
+                        return ((Comparable)prop).compareTo(value) == -1;
+                    }
+                    return false;
+                }
+                case GREATER_THAN_EQUAL: {
+                    if ( null != value ) {
+                        return ((Comparable)prop).compareTo(value) >= 0;
+                    }
+                    return false;
+                }
+                case LESS_THAN_EQUAL: {
+                    if ( null != value ) {
+                        return ((Comparable)prop).compareTo(value) <= 0;
+                    }
+                    return false;
+                }
+                default:
+                    throw new IllegalArgumentException("Invalid state as no valid filter was provided");
+            }
+        }
+    }
+
+
 
     private void printRecords(List<SpatialDatabaseRecord> records) {
         for (SpatialDatabaseRecord record : records) {
