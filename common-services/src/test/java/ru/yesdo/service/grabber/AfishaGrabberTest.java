@@ -1,7 +1,9 @@
 package ru.yesdo.service.grabber;
 
+import org.geotools.filter.text.cql2.CQLException;
 import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StopWatch;
 import ru.yesdo.AbstractCommonServiceTest;
 import ru.yesdo.GeneralCommonServiceTest;
 import ru.yesdo.model.Activity;
@@ -10,6 +12,7 @@ import ru.yesdo.service.grabber.afisha.AfishaGrabber;
 
 
 import javax.annotation.Resource;
+import java.util.Calendar;
 import java.util.UUID;
 
 /**
@@ -45,7 +48,6 @@ public class AfishaGrabberTest extends GeneralCommonServiceTest {
 
     @Test
     public void testGrabProductsAndOffers() throws Exception {
-        createWeekDays();
         afishaGrabber.grabActivities();
         afishaGrabber.grabMerchants(1);
 
@@ -56,5 +58,6 @@ public class AfishaGrabberTest extends GeneralCommonServiceTest {
 
         afishaGrabber.grabProductAndOffers(false);
     }
+
 
 }

@@ -17,7 +17,6 @@ public class OfferData {
     private Date expirationAt;//
     private ContactData contactData;
     private boolean partial = true;
-    private Map<WeekDay.Days,Set<OfferTimeData>> offerTimes;
     private List<TimeCost> timeCosts = new ArrayList<>();
 
 
@@ -102,31 +101,6 @@ public class OfferData {
         this.partial = partial;
     }
 
-    public Map<WeekDay.Days, Set<OfferTimeData>> getOfferTimes() {
-        return offerTimes;
-    }
-
-
-    public void setOfferTimes(Map<WeekDay.Days, Set<OfferTimeData>> offerTimes) {
-        this.offerTimes = offerTimes;
-    }
-
-    public OfferData addOfferTimes(WeekDay.Days weekDay, OfferTimeData... offerTimeDatas) {
-        if ( null == this.offerTimes ) this.offerTimes = new HashMap<>();
-        this.offerTimes.put(weekDay, new HashSet<>(Arrays.asList(offerTimeDatas)));
-        return this;
-    }
-
-    public OfferData addOfferTime(WeekDay.Days weekDay, OfferTimeData offerTimeData) {
-        if ( null == this.offerTimes ) this.offerTimes = new HashMap<>();
-        Set<OfferTimeData> offerTimeDatas = new HashSet<>();
-        if ( this.offerTimes.containsKey(weekDay) ) {
-            offerTimeDatas = this.offerTimes.get(weekDay);
-        }
-        offerTimeDatas.add(offerTimeData);
-        this.offerTimes.put(weekDay,offerTimeDatas);
-        return this;
-    }
 
     public OfferData addTimeCost(TimeCost timeCost) {
         this.timeCosts.add(timeCost);

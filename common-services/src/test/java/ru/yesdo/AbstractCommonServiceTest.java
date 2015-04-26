@@ -78,8 +78,6 @@ public class AbstractCommonServiceTest extends TestCase {
     @Resource
     protected GeoDataImporter geoDataImporter;
     @Resource
-    protected WeekDayGraphRepository weekDayGraphRepository;
-    @Resource
     protected ContactGraphRepository contactGraphRepository;
     @Resource
     protected TimeCostService timeCostService;

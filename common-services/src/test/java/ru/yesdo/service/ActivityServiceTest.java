@@ -19,18 +19,12 @@ import java.util.Set;
  */
 public class ActivityServiceTest extends GeneralCommonServiceTest {
 
-    @Test
-    @Transactional
-    public void testCreateWeekDays() {
-        createWeekDays();
-    }
 
 
     @Test
     @Transactional
     @Rollback(false)
     public void testCreateActivity() {
-        createWeekDays();
         for (ActivityData activityData : activityDatas) {
             Activity activity = createActivity(activityData);
             assertNotNull(activity);

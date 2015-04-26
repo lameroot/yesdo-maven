@@ -50,14 +50,6 @@ public class Offer {
     @Enumerated(EnumType.STRING)
     private Publicity publicity;//публичность данного продукта, он может быть скрытый, может быть приватный, публичный, только для избранных
 
-//    @GraphProperty
-//    @Transient
-//    private TimeProduct timeProduct;//время в которое можно воспользоваться услугой
-
-    @Transient
-    @RelatedToVia(direction = Direction.INCOMING, elementClass = OfferTime.class)
-    private Set<OfferTime> offerTimes = new HashSet<>();
-
     @Column(name = "offer_work_time")
     private String offerWorkTime;
 
@@ -131,14 +123,6 @@ public class Offer {
         this.publicity = publicity;
     }
 
-//    public TimeProduct getTimeProduct() {
-//        return timeProduct;
-//    }
-//
-//    public void setTimeProduct(TimeProduct timeProduct) {
-//        this.timeProduct = timeProduct;
-//    }
-
     public ProductType getProductType() {
         return productType;
     }
@@ -171,17 +155,19 @@ public class Offer {
         this.offerWorkTime = offerWorkTime;
     }
 
-    public Set<OfferTime> getOfferTimes() {
-        return offerTimes;
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Offer{");
+        sb.append("id=").append(id);
+        sb.append(", graphId=").append(graphId);
+        sb.append(", amount=").append(amount);
+        sb.append(", enabled=").append(enabled);
+        sb.append(", publicity=").append(publicity);
+        sb.append(", expirationAt=").append(expirationAt);
+        sb.append('}');
+        return sb.toString();
     }
 
-    public void setOfferTimes(Set<OfferTime> offerTimes) {
-        this.offerTimes = offerTimes;
-    }
 
-    public Offer addOfferTime(OfferTime offerTime) {
-        if ( null == this.offerTimes ) this.offerTimes = new HashSet<>();
-        this.offerTimes.add(offerTime);
-        return this;
-    }
 }

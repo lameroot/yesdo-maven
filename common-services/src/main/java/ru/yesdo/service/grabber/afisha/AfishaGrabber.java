@@ -16,7 +16,6 @@ import ru.yesdo.model.*;
 import ru.yesdo.model.data.*;
 import ru.yesdo.service.GeoDataImporter;
 import ru.yesdo.service.grabber.AbstractGrabber;
-import ru.yesdo.service.grabber.Grabber;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -24,8 +23,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by lameroot on 04.03.15.
@@ -202,10 +199,6 @@ public class AfishaGrabber extends AbstractGrabber {
     private Set<OfferData> createOfferData(Movie movie, Element element, Calendar date) throws ParseException {
         Set<OfferData> offerDatas = new HashSet<>();
 
-
-
-        WeekDay.Days days = WeekDay.Days.byDate(date);
-
         SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
         Elements timeInsides = element.select(".time-inside").select("span");
         for (Element timeInside : timeInsides) {
@@ -226,12 +219,13 @@ public class AfishaGrabber extends AbstractGrabber {
                 else if ( 12 <= hours && hours < 17 ) amount = (max - min) /2;
                 else amount = max;
             }
+            if ( 0 == amount ) throw new IllegalArgumentException("Amount is null: movie: " + movie.getTitle() + ", " + movie.intervalPrices + "," + movie.siteUrl);
 
             cal.add(Calendar.MINUTE,movie.duration);
 
             TimeCost timeCost = TimeCost.duringOneDay(date,
-                    TimeCost.createTime(dateInside.getHours(),dateInside.getMinutes()),
-                    TimeCost.createTime(cal.get(Calendar.HOUR_OF_DAY),cal.get(Calendar.MINUTE)),
+                    TimeCost.createTime(dateInside.getHours(), dateInside.getMinutes()),
+                    TimeCost.createTime(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE)),
                     amount);
             offerData.addTimeCost(timeCost);
 
@@ -320,9 +314,7 @@ public class AfishaGrabber extends AbstractGrabber {
             System.out.println("-------");
             for (OfferData offerData : entry.getValue()) {
                 System.out.println(offerData);
-                for (Map.Entry<WeekDay.Days, Set<OfferTimeData>> daysSetEntry : offerData.getOfferTimes().entrySet()) {
-                    System.out.println(daysSetEntry.getKey() + ":" + daysSetEntry.getValue());
-                }
+
                 for (ContactParam contactParam : offerData.getContactData().getContactParams()) {
                     System.out.println(contactParam);
                 }
@@ -437,7 +429,7 @@ public class AfishaGrabber extends AbstractGrabber {
                 String scheduleUrl = (String)merchant.getContact().getContactParam(AFISHA_URL_PARAM).getValue();
                 long startPrice = 0L;
                 if ( null != merchant.getContact().getContactParam(ContactParam.PRICE_MIN_PARAM) )
-                    startPrice = (Integer)merchant.getContact().getContactParam(ContactParam.PRICE_MAX_PARAM).getValue();
+                    startPrice = (Integer)merchant.getContact().getContactParam(ContactParam.PRICE_MIN_PARAM).getValue();
                 long finishPrice = 10000L;
                 if ( null != merchant.getContact().getContactParam(ContactParam.PRICE_MAX_PARAM))
                     finishPrice = (Integer)merchant.getContact().getContactParam(ContactParam.PRICE_MAX_PARAM).getValue();

@@ -32,11 +32,7 @@ public class GeneralCommonServiceTest extends AbstractCommonServiceTest {
     protected List<ProductData> productDatas = new ArrayList<>();
     protected List<UserData> userDatas = new ArrayList<>();
     protected List<Object[]> offerDatas = new ArrayList<>();
-    protected List<WeekDay> weekDays = new ArrayList(){{
-        for (WeekDay.Days days : WeekDay.Days.values()) {
-            add(new WeekDay(days));
-        }
-    }};
+
 
     public void initIndexesNodes() {
         Activity activity = new Activity("fake");
@@ -244,22 +240,6 @@ public class GeneralCommonServiceTest extends AbstractCommonServiceTest {
         return userService.create(userData);
     }
 
-    public void createWeekDays() {
-        Transaction transaction = graphDatabaseService.beginTx();
-        try {
-            for (WeekDay weekDay : weekDays) {
-                neo4jTemplate.save(weekDay);
-            }
-            transaction.success();
-        } catch (Exception e) {
-            transaction.failure();
-            e.printStackTrace();
-        } finally {
-            transaction.close();
-        }
-
-    }
-
 
     protected void createUnderground() {
 
@@ -298,8 +278,7 @@ public class GeneralCommonServiceTest extends AbstractCommonServiceTest {
                     String merchantName = (String) offerDataAsArray[0];
                     String productTitle = (String) offerDataAsArray[1];
                     OfferData offerData = (OfferData) offerDataAsArray[2];
-                    offerData.addOfferTimes(WeekDay.Days.FRIDAY, new OfferTimeData().start(1000).finish(2000), new OfferTimeData().interval(1200, 1400))
-                            .addOfferTimes(WeekDay.Days.MONDAY, new OfferTimeData().interval(1200, 1400));
+
 
                     Merchant merchant = merchantRepository.findByName(merchantName);
                     assertNotNull(merchant);

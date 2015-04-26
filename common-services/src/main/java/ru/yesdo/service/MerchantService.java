@@ -13,11 +13,8 @@ import ru.yesdo.graph.repository.*;
 import ru.yesdo.model.*;
 import ru.yesdo.model.data.MerchantData;
 import ru.yesdo.model.data.OfferData;
-import ru.yesdo.model.data.OfferTimeData;
 
 import javax.annotation.Resource;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by lameroot on 18.02.15.
@@ -43,8 +40,6 @@ public class MerchantService {
     private OfferGraphRepository offerGraphRepository;
     @Resource
     private Neo4jTemplate neo4jTemplate;
-    @Resource
-    private WeekDayGraphRepository weekDayGraphRepository;
     @Resource
     private TimeCostService timeCostService;
 
@@ -94,6 +89,7 @@ public class MerchantService {
             offerGraphRepository.save(offer);
             if ( null != offerData.getTimeCosts() && !offerData.getTimeCosts().isEmpty() ) {
                 for (TimeCost timeCost : offerData.getTimeCosts()) {
+                    timeCostService.addTimeCost(offer,timeCost);
                     //timeCostService.addTimeCost(offer,timeCost);
                 }
             }

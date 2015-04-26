@@ -25,7 +25,6 @@ public class ContactServiceTest extends GeneralCommonServiceTest {
     @Test
     @Transactional
     public void testGetContacts() {
-        createWeekDays();
         createActivities();
         createMerchants();
         createProducts();
