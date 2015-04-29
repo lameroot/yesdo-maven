@@ -4,9 +4,7 @@ import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.*;
 
 import javax.persistence.*;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by lameroot on 08.02.15.
@@ -66,6 +64,9 @@ public class Offer {
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "fk_contact_id", nullable = true)
     private Contact contact;
+
+    @Transient
+    private List<TimeCost> timeCosts = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -155,6 +156,13 @@ public class Offer {
         this.offerWorkTime = offerWorkTime;
     }
 
+    public List<TimeCost> getTimeCosts() {
+        return timeCosts;
+    }
+
+    public void setTimeCosts(List<TimeCost> timeCosts) {
+        this.timeCosts = timeCosts;
+    }
 
     @Override
     public String toString() {

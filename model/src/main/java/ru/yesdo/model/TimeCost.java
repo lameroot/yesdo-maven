@@ -3,11 +3,13 @@ package ru.yesdo.model;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 
 /**
@@ -49,6 +51,17 @@ public class TimeCost {
     private Double startTime;
     private Double finishTime;
 
+    private Date start;
+    private Date finish;
+
+    public Date getStart() {
+        return start;
+    }
+
+    public Date getFinish() {
+        return finish;
+    }
+
     private Coordinate[] coordinates;
     private HashMap<String,Object> params = new HashMap<>();
 
@@ -71,17 +84,36 @@ public class TimeCost {
         else this.finishTime = this.startTime;
         addCost(cost);
     }
+    private TimeCost() {
 
-    private void addCost(Long cost) {
-        params.put(TIME_COST_RELATIONSHIP_COST_PARAM_NAME,cost);
     }
+
     public final static Double toDay(Calendar date) {
         if ( null == date ) return null;
-        return new Double(date.get(Calendar.YEAR) + "." + date.get(Calendar.DAY_OF_YEAR));
+        return new Double(date.get(Calendar.YEAR) + "." + date.get(Calendar.DAY_OF_YEAR) + "9");//последний 9 нужен как дополняющий, чтобы исключить чтобы пропадала запись н-р при 2015.120 (где последний 0 в double пропадёт)
     }
     public final static Double toDay(SpecialDay specialDay) {
         return new Double("-0." + specialDay.num);
     }
+    public final static Date toDate(Double day, Double time) {
+        Calendar calendar = Calendar.getInstance();
+        String[] sDate = String.valueOf(day).split("\\.");
+        String year = sDate[0];
+        String dayOfYear = sDate[1].substring(0,sDate[1].length()-1);
+        calendar.set(Calendar.YEAR,Integer.parseInt(year));
+        calendar.set(Calendar.DAY_OF_YEAR,Integer.parseInt(dayOfYear));
+        String[] sTime = String.valueOf(time).split("\\.");//todo: некорреткно сохраняется или грабится время фильма
+        String hour = sTime[0];
+        String min = sTime[1];
+        calendar.set(Calendar.HOUR_OF_DAY,Integer.parseInt(hour));
+        calendar.set(Calendar.MINUTE,Integer.parseInt(min));
+        return calendar.getTime();
+    }
+
+    private void addCost(Long cost) {
+        params.put(TIME_COST_RELATIONSHIP_COST_PARAM_NAME,cost);
+    }
+
     private boolean isTheSameDay(Double startDay, Double finishDay) {
         if ( startDay.equals(finishDay) ) {
             return true;
@@ -121,6 +153,22 @@ public class TimeCost {
         Coordinate leftHigh = new Coordinate(sd, finishTime);
         Coordinate rightHigh = new Coordinate(fd, finishTime);
         return geometryFactory.createPolygon(new Coordinate[]{leftLow,leftHigh,rightHigh,rightLow,leftLow});
+    }
+    public static TimeCost fromGeometry(Geometry geometry) {
+        TimeCost timeCost = new TimeCost();
+        if ( geometry instanceof LineString ) {
+            LineString lineString = (LineString)geometry;
+            Coordinate startPoint = lineString.getStartPoint().getCoordinate();
+            Coordinate endPoint = lineString.getEndPoint().getCoordinate();
+            double yearDayStart = startPoint.x;
+            double hourMinStart = startPoint.y;
+            double yearDayEnd = endPoint.x;
+            double hourMinEnd = endPoint.y;
+
+            timeCost.start = toDate(yearDayStart, hourMinStart);
+            timeCost.finish = toDate(yearDayEnd, hourMinEnd);
+        }
+        return timeCost;
     }
 
     public HashMap getParamsOfRelationship() {
@@ -169,4 +217,12 @@ public class TimeCost {
         return status;
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("TimeCost{");
+        sb.append("start=").append(start);
+        sb.append(", finish=").append(finish);
+        sb.append('}');
+        return sb.toString();
+    }
 }

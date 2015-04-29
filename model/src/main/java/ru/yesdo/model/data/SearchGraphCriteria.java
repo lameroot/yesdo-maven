@@ -1,13 +1,11 @@
 package ru.yesdo.model.data;
 
-import org.neo4j.cypher.internal.compiler.v2_0.functions.Str;
 import org.springframework.data.geo.Box;
 import org.springframework.data.geo.Circle;
 import org.springframework.data.geo.Polygon;
 import org.springframework.data.geo.Shape;
 import org.springframework.data.neo4j.repository.GeoConverter;
 import ru.yesdo.model.Contact;
-import ru.yesdo.model.OfferTime;
 
 import java.util.ArrayList;
 import java.util.List;

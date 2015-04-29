@@ -13,4 +13,5 @@
     </root>
 
     <logger name="org.springframework.data.neo4j.support.query" level="DEBUG" />
+    <logger name="ru.yesdo.service" level="DEBUG" />
 </configuration>

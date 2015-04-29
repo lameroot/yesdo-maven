@@ -1,5 +1,6 @@
 package ru.yesdo.service;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import org.geotools.filter.text.cql2.CQLException;
 import org.neo4j.gis.spatial.EditableLayer;
@@ -84,9 +85,10 @@ public class TimeCostService {
             Long offerId = (Long)flow.getProperty(OFFER_GRAPH_ID_PARAM_NAME);
             Long productId = (Long)flow.getProperty(PRODUCT_GRAPH_ID_PARAM_NAME);
             Long merchantId = (Long)flow.getProperty(MERCHANT_GRAPH_ID_PARAM_NAME);
+            TimeCost timeCost = TimeCost.fromGeometry(flow.getGeometry());
 
             if ( null != offerId && !ids.contains(offerId) ) {
-                ids.add(new OfferIdentificator(offerId,productId,merchantId));
+                ids.add(new OfferIdentificator(offerId,productId,merchantId,timeCost));
             }
         }
 
@@ -99,6 +101,7 @@ public class TimeCostService {
         for (OfferIdentificator id : ids) {
             if ( null != id ) {
                 Offer offer = idToOffer(id);
+                offer.getTimeCosts().add(id.getTimeCost());
                 offers.add(offer);
             }
         }

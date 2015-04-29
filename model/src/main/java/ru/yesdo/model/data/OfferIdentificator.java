@@ -1,6 +1,8 @@
 package ru.yesdo.model.data;
 
 
+import ru.yesdo.model.TimeCost;
+
 /**
  * Created by lameroot on 26.04.15.
  */
@@ -9,12 +11,17 @@ public class OfferIdentificator {
     private Long offerId;
     private Long productId;
     private Long merchantId;
+    private TimeCost timeCost;
 
 
     public OfferIdentificator(Long offerId, Long productId, Long merchantId) {
         this.offerId = offerId;
         this.productId = productId;
         this.merchantId = merchantId;
+    }
+    public OfferIdentificator(Long offerId, Long productId, Long merchantId, TimeCost timeCost) {
+        this(offerId, productId, merchantId);
+        this.timeCost = timeCost;
     }
 
     public Long getOfferId() {
@@ -27,6 +34,10 @@ public class OfferIdentificator {
 
     public Long getMerchantId() {
         return merchantId;
+    }
+
+    public TimeCost getTimeCost() {
+        return timeCost;
     }
 
     @Override

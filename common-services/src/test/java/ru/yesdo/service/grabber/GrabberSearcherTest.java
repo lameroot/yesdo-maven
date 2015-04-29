@@ -29,7 +29,7 @@ public class GrabberSearcherTest extends AbstractCommonServiceTest {
         try {
             Set<Offer> offers = timeCostService.findOffersBy(searchStart, searchEnd, 12.00, 16.30, 20000L, 50000L);
             for (Offer offer : offers) {
-                System.out.println(offer + ":" + offer.getProduct() + ":" + offer.getMerchant());
+                System.out.println(offer + ":" + offer.getProduct() + ":" + offer.getMerchant() + ":" + offer.getTimeCosts());
             }
         } catch (CQLException e) {
             e.printStackTrace();
