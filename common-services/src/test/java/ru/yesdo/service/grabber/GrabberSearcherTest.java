@@ -19,7 +19,7 @@ public class GrabberSearcherTest extends AbstractCommonServiceTest {
     @Transactional
     public void findProducts() {
         Calendar searchStart = Calendar.getInstance();
-        searchStart.add(Calendar.DAY_OF_MONTH,1);
+        searchStart.add(Calendar.DAY_OF_MONTH,0);
         Calendar searchEnd = Calendar.getInstance();
         searchEnd.add(Calendar.DAY_OF_MONTH, 1);
 

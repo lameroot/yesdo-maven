@@ -205,6 +205,7 @@ public class AfishaGrabber extends AbstractGrabber {
             OfferData offerData = new OfferData();
 
             Date dateInside = dateFormat.parse(timeInside.text());
+
             Calendar cal = Calendar.getInstance();
             cal.setTime(dateInside);
 
@@ -222,10 +223,12 @@ public class AfishaGrabber extends AbstractGrabber {
             if ( 0 == amount ) throw new IllegalArgumentException("Amount is null: movie: " + movie.getTitle() + ", " + movie.intervalPrices + "," + movie.siteUrl);
 
             cal.add(Calendar.MINUTE,movie.duration);
+            Calendar calendarInside = Calendar.getInstance();
+            calendarInside.setTime(dateInside);
 
             TimeCost timeCost = TimeCost.duringOneDay(date,
-                    TimeCost.createTime(dateInside.getHours(), dateInside.getMinutes()),
-                    TimeCost.createTime(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE)),
+                    calendarInside,
+                    cal,
                     amount);
             offerData.addTimeCost(timeCost);
 

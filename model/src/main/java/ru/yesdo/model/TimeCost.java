@@ -69,37 +69,37 @@ public class TimeCost {
     public static TimeCost duringOneSpecialDay(SpecialDay specialDay, Double startTime, Double finishTime, Long cost) {
         return new TimeCost(toDay(specialDay),null,startTime,finishTime,cost);
     }
+    @Deprecated
     public static TimeCost duringOneDay(Calendar day, Double startTime, Double finishTime,Long cost) {
         return new TimeCost(toDay(day),null,startTime,finishTime,cost);
+    }
+    public static TimeCost duringOneDay(Calendar day, Calendar startTime, Calendar finishTime,Long cost) {
+        return new TimeCost(toDay(day),null,toTime(startTime),toTime(finishTime),cost);
     }
     public static TimeCost duringSeveralDays(Calendar startDay, Calendar finishDay, Double startTime, Double finishTime, Long cost) {
         return new TimeCost(toDay(startDay),toDay(finishDay),startTime,finishTime,cost);
     }
 
-    public static Double toDay2(Calendar date) {
+    public static Double toDay(Calendar date) {
         return Double.parseDouble(String.valueOf(date.get(Calendar.YEAR)) + StringUtils.leftPad(String.valueOf(date.get(Calendar.DAY_OF_YEAR)), 3, '0'));
     }
-    public static Double toTime2(Calendar date) {
+    public static Double toTime(Calendar date) {
         int minuteOfDay = date.get(Calendar.HOUR_OF_DAY) * 60 + date.get(Calendar.MINUTE);
+        System.out.println("minuteOfDay = " + minuteOfDay);
+        System.out.println("Double.parseDouble(String.valueOf(StringUtils.leftPad(String.valueOf(minuteOfDay),2,'0'))) = " + Double.parseDouble(String.valueOf(StringUtils.leftPad(String.valueOf(minuteOfDay),2,'0'))));
         return Double.parseDouble(String.valueOf(StringUtils.leftPad(String.valueOf(minuteOfDay),2,'0')));
     }
-    public final static Date toDate2(Double day, Double time) {
+    public final static Date toDate(Double day, Double time) {
         String sDay = String.valueOf(day.intValue());
         String sYear = sDay.substring(0,sDay.length()-3);
         String sDayOfYear = sDay.substring(sDay.length()-3);
 
-        String sTime = String.valueOf(time.intValue());
-        System.out.println(sTime);
-        String sHour = sTime.substring(0,sTime.length()-2);
-        System.out.println(sHour);
-        String sMin = sTime.substring(sTime.length()-2);
-        Integer hour = Integer.valueOf(sHour);
-        System.out.println(hour);
+        String sMin = String.valueOf(time.intValue());
         Integer minInDay = Integer.valueOf(sMin);
-        Integer minInHour = minInDay - (hour * 60);
 
-        System.out.println(minInDay);
-        System.out.println(minInHour);
+        Integer hour = (minInDay / 60);
+        Integer minInHour = minInDay - ( hour * 60);
+
         Calendar date = Calendar.getInstance();
         date.set(Calendar.YEAR,Integer.valueOf(sYear));
         date.set(Calendar.DAY_OF_YEAR,Integer.valueOf(sDayOfYear));
@@ -114,7 +114,14 @@ public class TimeCost {
         Double d = 1.22;
         System.out.println(d.intValue());
 
-        Date date = TimeCost.toDate2(2015003.0, 1455.0);
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.MINUTE,0);
+        System.out.println(calendar.getTime());
+        Double day2 = toDay(calendar);
+        Double time2 = toTime(calendar);
+        System.out.println("day2 = " + day2);
+        System.out.println("time2 = " + time2);
+        Date date = TimeCost.toDate(day2, time2);
         System.out.println(date);
     }
 
@@ -131,27 +138,11 @@ public class TimeCost {
 
     }
 
-    public final static Double toDay(Calendar date) {
-        if ( null == date ) return null;
-        return new Double(date.get(Calendar.YEAR) + "." + date.get(Calendar.DAY_OF_YEAR) + "9");//последний 9 нужен как дополняющий, чтобы исключить чтобы пропадала запись н-р при 2015.120 (где последний 0 в double пропадёт)
-    }
+
     public final static Double toDay(SpecialDay specialDay) {
         return new Double("-0." + specialDay.num);
     }
-    public final static Date toDate(Double day, Double time) {
-        Calendar calendar = Calendar.getInstance();
-        String[] sDate = String.valueOf(day).split("\\.");
-        String year = sDate[0];
-        String dayOfYear = sDate[1].substring(0,sDate[1].length()-1);
-        calendar.set(Calendar.YEAR,Integer.parseInt(year));
-        calendar.set(Calendar.DAY_OF_YEAR,Integer.parseInt(dayOfYear));
-        String[] sTime = String.valueOf(time).split("\\.");//todo: некорреткно сохраняется или грабится время фильма
-        String hour = sTime[0];
-        String min = sTime[1];
-        calendar.set(Calendar.HOUR_OF_DAY,Integer.parseInt(hour));
-        calendar.set(Calendar.MINUTE,Integer.parseInt(min));
-        return calendar.getTime();
-    }
+
 
     private void addCost(Long cost) {
         params.put(TIME_COST_RELATIONSHIP_COST_PARAM_NAME,cost);
@@ -188,6 +179,7 @@ public class TimeCost {
         return geometryFactory.createPolygon(coordinates);
     }
 
+    //todo: сюда надо передавать не Double а правильный формат. над опереписать и уйти от этого типа, слишком ненадёжный
     public static Geometry createBox(GeometryFactory geometryFactory, Calendar startDay, Calendar finishDay, Double startTime, Double finishTime) {
         Double sd = toDay(startDay);
         Double fd = toDay(finishDay);
@@ -224,6 +216,17 @@ public class TimeCost {
         if ( hour < 0 || hour >= 24 ) throw new IllegalArgumentException("Hour must be between 0 and 23 hours");
         if ( min < 0 || min >= 60 ) throw new IllegalArgumentException("Min must be between 0 and 59 minutes");
         return new Double(hour + "." + min);
+    }
+    public static Calendar createDateTime(Integer hour, Integer min) {
+        if ( null == hour ) throw new IllegalArgumentException("Hour must be set");
+        if ( null == min ) min = 0;
+        if ( hour < 0 || hour >= 24 ) throw new IllegalArgumentException("Hour must be between 0 and 23 hours");
+        if ( min < 0 || min >= 60 ) throw new IllegalArgumentException("Min must be between 0 and 59 minutes");
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY,hour);
+        calendar.set(Calendar.MINUTE,min);
+
+        return calendar;
     }
 
     public final Geometry toGeometry(GeometryFactory geometryFactory) {
@@ -267,6 +270,8 @@ public class TimeCost {
         sb.append(", finishDay=").append(finishDay);
         sb.append(", startTime=").append(startTime);
         sb.append(", finishTime=").append(finishTime);
+        sb.append("start=").append(start);
+        sb.append(", finish=").append(finish);
         sb.append('}');
         return sb.toString();
     }
