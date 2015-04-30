@@ -420,7 +420,7 @@ public class AfishaGrabber extends AbstractGrabber {
 
     @Override
     @Transactional
-    public void grabProductAndOffers(boolean onlyProduct) throws Exception {
+    public void grabProductAndOffers(boolean onlyProduct, int countDaysFromCurrent) throws Exception {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
         for (Merchant merchant : merchantGraphRepository.findAll(new PageRequest(0, 100))) {
             if ( null == merchant.getContact() ) continue;
@@ -436,9 +436,12 @@ public class AfishaGrabber extends AbstractGrabber {
 
                 Elements elements = null;
                 Calendar current = Calendar.getInstance();
-
+                System.out.println("startPrice = " + startPrice);
+                System.out.println("finishPrice = " + finishPrice);
+                int count = 0;
                 Set<Product> products = new HashSet<>();
                 do {
+                    count++;
                     String timeUrl = scheduleUrl + dateFormat.format(current.getTime()) + "/";
                     System.out.println("timeUrl : " + timeUrl);
 
@@ -458,6 +461,9 @@ public class AfishaGrabber extends AbstractGrabber {
                                 movie.intervalPrices = new LongRange(startPrice, finishPrice);
                                 Set<OfferData> offerDatas = createOfferData(movie, element, current);
                                 for (OfferData offerData : offerDatas) {
+                                    for (TimeCost timeCost : offerData.getTimeCosts()) {
+                                        System.out.println(timeCost);
+                                    }
                                     Offer offer = merchantService.concludeOffer(merchant, product, offerData);
                                     if (null == offer) throw new IllegalArgumentException("Unable to create offer");
                                 }
@@ -471,6 +477,7 @@ public class AfishaGrabber extends AbstractGrabber {
                     System.out.println("On " + current.getTime() + " we have : " + productsOnTime.size() + " products");
                     products.addAll(productsOnTime);
 
+                    if ( count >= countDaysFromCurrent ) break;
                     current.add(Calendar.DAY_OF_WEEK,1);
                 } while (0 < elements.size());
 

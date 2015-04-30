@@ -13,7 +13,7 @@ public interface Grabber {
 
     public Set<Activity> grabActivities();
     public Set<Merchant> grabMerchants(Integer countForOneActivity) throws Exception;
-    public void grabProductAndOffers(boolean onlyProduct) throws Exception;
+    public void grabProductAndOffers(boolean onlyProduct, int countDaysFromCurrent) throws Exception;
 //    public void grabProducts();
 //    public void grabOffers();
 }

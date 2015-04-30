@@ -8,6 +8,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -73,6 +74,48 @@ public class TimeCost {
     }
     public static TimeCost duringSeveralDays(Calendar startDay, Calendar finishDay, Double startTime, Double finishTime, Long cost) {
         return new TimeCost(toDay(startDay),toDay(finishDay),startTime,finishTime,cost);
+    }
+
+    public static Double toDay2(Calendar date) {
+        return Double.parseDouble(String.valueOf(date.get(Calendar.YEAR)) + StringUtils.leftPad(String.valueOf(date.get(Calendar.DAY_OF_YEAR)), 3, '0'));
+    }
+    public static Double toTime2(Calendar date) {
+        int minuteOfDay = date.get(Calendar.HOUR_OF_DAY) * 60 + date.get(Calendar.MINUTE);
+        return Double.parseDouble(String.valueOf(StringUtils.leftPad(String.valueOf(minuteOfDay),2,'0')));
+    }
+    public final static Date toDate2(Double day, Double time) {
+        String sDay = String.valueOf(day.intValue());
+        String sYear = sDay.substring(0,sDay.length()-3);
+        String sDayOfYear = sDay.substring(sDay.length()-3);
+
+        String sTime = String.valueOf(time.intValue());
+        System.out.println(sTime);
+        String sHour = sTime.substring(0,sTime.length()-2);
+        System.out.println(sHour);
+        String sMin = sTime.substring(sTime.length()-2);
+        Integer hour = Integer.valueOf(sHour);
+        System.out.println(hour);
+        Integer minInDay = Integer.valueOf(sMin);
+        Integer minInHour = minInDay - (hour * 60);
+
+        System.out.println(minInDay);
+        System.out.println(minInHour);
+        Calendar date = Calendar.getInstance();
+        date.set(Calendar.YEAR,Integer.valueOf(sYear));
+        date.set(Calendar.DAY_OF_YEAR,Integer.valueOf(sDayOfYear));
+        date.set(Calendar.HOUR_OF_DAY,hour);
+        date.set(Calendar.MINUTE,minInHour);
+        date.set(Calendar.SECOND,0);
+
+        return date.getTime();
+    }
+
+    public static void main(String[] args) {
+        Double d = 1.22;
+        System.out.println(d.intValue());
+
+        Date date = TimeCost.toDate2(2015003.0, 1455.0);
+        System.out.println(date);
     }
 
     protected TimeCost(Double startDay, Double finishDay, Double startTime, Double finishTime, Long cost) {
@@ -219,6 +262,16 @@ public class TimeCost {
 
     @Override
     public String toString() {
+        final StringBuilder sb = new StringBuilder("TimeCost{");
+        sb.append("startDay=").append(startDay);
+        sb.append(", finishDay=").append(finishDay);
+        sb.append(", startTime=").append(startTime);
+        sb.append(", finishTime=").append(finishTime);
+        sb.append('}');
+        return sb.toString();
+    }
+
+    public String toStringShort() {
         final StringBuilder sb = new StringBuilder("TimeCost{");
         sb.append("start=").append(start);
         sb.append(", finish=").append(finish);

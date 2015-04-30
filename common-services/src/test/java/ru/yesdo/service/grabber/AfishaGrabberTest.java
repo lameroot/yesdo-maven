@@ -56,7 +56,7 @@ public class AfishaGrabberTest extends GeneralCommonServiceTest {
         System.out.println("count in db: " + countInDb);
         System.out.println("count in graph: " + countInGraph);
 
-        afishaGrabber.grabProductAndOffers(false);
+        afishaGrabber.grabProductAndOffers(false, 1);
     }
 
 
